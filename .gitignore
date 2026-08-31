@@ -1,0 +1,17 @@
+# Secrets / local config
+.env
+.env.*
+*.key
+*.pem
+*.p12
+.claude/settings.local.json
+
+# OS cruft
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+.idea/
+*.swp
