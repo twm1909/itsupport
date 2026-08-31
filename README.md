@@ -10,6 +10,8 @@ numbers, email domains (`@uobgroup.com`), SLAs, and FAQ content are fictitious.
 
 https://twm1909.github.io/itsupport/
 
+![Screenshot of the IT Service Desk demo — hero banner and quick-info cards](docs/screenshot.png)
+
 ## Running locally
 
 The entire site is `index.html`. Open it directly in a browser — double-click it,
