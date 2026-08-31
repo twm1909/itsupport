@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UOB · IT Service Desk (Training Demo)</title>
+
+<!-- ============================================================
+     STYLES — all CSS lives here, no external dependencies
+     ============================================================ -->
+<style>
+  /* ---- Design tokens ---- */
+  :root {
+    --blue: #00539B;
+    --blue-dark: #003e75;
+    --accent: #E8A33D;
+    --accent-dark: #b97e1f;
+    --bg: #ffffff;
+    --surface: #f4f6f9;
+    --border: #d7dde5;
+    --text: #2C3038;
+    --text-muted: #5b626d;
+    --error: #c62828;
+    --success: #1b7f3b;
+    --success-bg: #e8f5ec;
+    --warning: #8a5a00;
+    --warning-bg: #fff4e0;
+    --radius: 8px;
+    --shadow: 0 1px 3px rgba(0,0,0,.10), 0 1px 2px rgba(0,0,0,.06);
+    --shadow-lg: 0 6px 20px rgba(0,0,0,.10);
+    --maxw: 1120px;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  /* ---- Base ---- */
+  *, *::before, *::after { box-sizing: border-box; }
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 84px; /* keep anchor targets clear of the sticky nav */
+  }
+  body {
+    margin: 0;
+    font-family: var(--font);
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--text);
+    background: var(--bg);
+  }
+  h1, h2, h3 { line-height: 1.25; color: var(--text); }
+  h2 { font-size: 1.6rem; margin: 0 0 .5rem; }
+  p { margin: 0 0 1rem; }
+  a { color: var(--blue); }
+  img { max-width: 100%; }
+
+  .container {
+    max-width: var(--maxw);
+    margin-inline: auto;
+    padding-inline: 24px;
+  }
+  section { padding: 56px 0; }
+  section:nth-of-type(even) { background: var(--surface); }
+
+  /* ---- Accessibility helpers ---- */
+  :focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 3px;
+  }
+  .skip-link {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    background: var(--blue);
+    color: #fff;
+    padding: 10px 16px;
+    z-index: 200;
+    border-radius: 0 0 var(--radius) 0;
+  }
+  .skip-link:focus {
+    left: 0;
+  }
+  .visually-hidden {
+    position: absolute !important;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0);
+    white-space: nowrap; border: 0;
+  }
+
+  /* ---- Buttons ---- */
+  .btn {
+    display: inline-block;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: var(--radius);
+    padding: 12px 22px;
+    border: 2px solid transparent;
+    text-decoration: none;
+    transition: background-color .15s ease, color .15s ease, border-color .15s ease;
+  }
+  .btn-primary {
+    background: var(--blue);
+    color: #fff;
+    border-color: var(--blue);
+  }
+  .btn-primary:hover { background: var(--blue-dark); border-color: var(--blue-dark); }
+  .btn-accent {
+    background: var(--accent);
+    color: #2b2100;
+    border-color: var(--accent);
+  }
+  .btn-accent:hover { background: var(--accent-dark); border-color: var(--accent-dark); color: #241b00; }
+  .btn-outline {
+    background: transparent;
+    color: var(--blue);
+    border-color: var(--blue);
+  }
+  .btn-outline:hover { background: rgba(0,83,155,.08); }
+  .btn-outline-light {
+    background: transparent;
+    color: #fff;
+    border-color: #fff;
+  }
+  .btn-outline-light:hover { background: rgba(255,255,255,.15); }
+
+  /* ============================================================
+     SECTION 1 — HEADER / NAV / HERO
+     ============================================================ */
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--blue);
+    color: #fff;
+    box-shadow: var(--shadow);
+  }
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 64px;
+  }
+  .brand {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #fff;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .brand:hover { color: #fff; }
+  .nav-toggle {
+    display: none;
+    background: transparent;
+    border: 2px solid rgba(255,255,255,.6);
+    border-radius: var(--radius);
+    color: #fff;
+    font: inherit;
+    padding: 6px 10px;
+    cursor: pointer;
+    align-items: center;
+    gap: 8px;
+  }
+  .nav-toggle .bars {
+    display: inline-block;
+    width: 18px; height: 2px;
+    background: #fff;
+    position: relative;
+  }
+  .nav-toggle .bars::before,
+  .nav-toggle .bars::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    width: 18px; height: 2px;
+    background: #fff;
+  }
+  .nav-toggle .bars::before { top: -6px; }
+  .nav-toggle .bars::after { top: 6px; }
+
+  .nav-list {
+    list-style: none;
+    display: flex;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+  }
+  .nav-list a {
+    display: block;
+    color: #fff;
+    text-decoration: none;
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    font-weight: 600;
+  }
+  .nav-list a:hover { background: rgba(255,255,255,.12); }
+
+  .hero {
+    background: linear-gradient(180deg, var(--blue) 0%, var(--blue-dark) 100%);
+    color: #fff;
+    padding: 64px 0;
+  }
+  .hero h1 {
+    color: #fff;
+    font-size: clamp(1.9rem, 4vw, 2.8rem);
+    margin: 0 0 12px;
+  }
+  .hero p {
+    font-size: 1.15rem;
+    max-width: 60ch;
+    color: #eaf1f8;
+  }
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 24px;
+  }
+
+  /* Quick-info cards */
+  .quick-info {
+    padding: 40px 0;
+  }
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+  }
+  .info-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 22px;
+  }
+  .info-card h3 {
+    margin: 0 0 6px;
+    font-size: 1rem;
+    color: var(--blue);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+  }
+  .info-card .big {
+    font-size: 1.35rem;
+    font-weight: 700;
+  }
+  .info-card .sub { color: var(--text-muted); font-size: .95rem; }
+
+  /* ============================================================
+     SECTION 2 — TICKET FORM
+     ============================================================ */
+  .form-wrap {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    padding: 28px;
+    max-width: 760px;
+  }
+  .field { margin-bottom: 20px; }
+  .field > label,
+  .field-group > legend {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .req { color: var(--error); }
+  .hint { color: var(--text-muted); font-size: .9rem; margin: 4px 0 0; }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="search"],
+  input[type="file"],
+  select,
+  textarea {
+    width: 100%;
+    font: inherit;
+    color: var(--text);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+  }
+  textarea { min-height: 130px; resize: vertical; }
+  input:hover, select:hover, textarea:hover { border-color: #9aa6b4; }
+
+  [aria-invalid="true"] {
+    border-color: var(--error) !important;
+    box-shadow: 0 0 0 1px var(--error);
+  }
+  .error {
+    display: none;
+    color: var(--error);
+    font-size: .9rem;
+    font-weight: 600;
+    margin-top: 6px;
+  }
+  .error.show { display: block; }
+
+  .field-group {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 20px;
+  }
+  .radio-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    margin-top: 4px;
+  }
+  .radio-row label {
+    font-weight: 400;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .note {
+    background: var(--warning-bg);
+    color: var(--warning);
+    border: 1px solid #f0d199;
+    border-radius: var(--radius);
+    padding: 8px 12px;
+    font-size: .9rem;
+    margin-top: 12px;
+  }
+
+  .counter { color: var(--text-muted); font-size: .85rem; float: right; font-weight: 400; }
+
+  .checkbox-field {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .checkbox-field input { margin-top: 5px; }
+  .checkbox-field label { font-weight: 400; }
+
+  .filename {
+    display: inline-block;
+    margin-top: 8px;
+    font-size: .9rem;
+    color: var(--text-muted);
+  }
+
+  .credential-warning {
+    display: none;
+    background: var(--warning-bg);
+    color: var(--warning);
+    border: 1px solid #f0d199;
+    border-left: 4px solid var(--accent-dark);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    margin-top: 8px;
+    font-size: .92rem;
+    font-weight: 600;
+  }
+  .credential-warning.show { display: block; }
+
+  .success-panel {
+    background: var(--success-bg);
+    border: 1px solid #b7e0c4;
+    border-left: 5px solid var(--success);
+    border-radius: var(--radius);
+    padding: 24px;
+    max-width: 760px;
+  }
+  .success-panel h3 {
+    color: var(--success);
+    margin: 0 0 12px;
+  }
+  .success-panel dl {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 6px 16px;
+    margin: 0 0 18px;
+  }
+  .success-panel dt { font-weight: 700; }
+  .success-panel dd { margin: 0; }
+  .ticket-ref {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: .5px;
+  }
+
+  /* ============================================================
+     SECTION 3 — FAQ
+     ============================================================ */
+  .faq-search-wrap { max-width: 480px; margin-bottom: 20px; }
+  .faq-list {
+    max-width: 820px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--bg);
+  }
+  .faq-item { border-top: 1px solid var(--border); }
+  .faq-item:first-child { border-top: 0; }
+  .faq-item[hidden] { display: none; }
+
+  .faq-q {
+    width: 100%;
+    text-align: left;
+    background: var(--bg);
+    border: 0;
+    font: inherit;
+    font-weight: 600;
+    color: var(--text);
+    padding: 16px 48px 16px 18px;
+    cursor: pointer;
+    position: relative;
+  }
+  .faq-q:hover { background: var(--surface); }
+  .faq-q::after {
+    content: "";
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    width: 10px; height: 10px;
+    border-right: 2px solid var(--blue);
+    border-bottom: 2px solid var(--blue);
+    transform: translateY(-70%) rotate(45deg);
+    transition: transform .2s ease;
+  }
+  .faq-q[aria-expanded="true"]::after {
+    transform: translateY(-30%) rotate(225deg);
+  }
+  .faq-panel {
+    padding: 0 18px 18px;
+    color: var(--text-muted);
+  }
+  .faq-panel[hidden] { display: none; }
+  .faq-empty {
+    max-width: 820px;
+    padding: 18px;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+  .faq-empty[hidden] { display: none; }
+
+  /* ============================================================
+     FOOTER
+     ============================================================ */
+  .site-footer {
+    background: var(--text);
+    color: #cfd4db;
+    padding: 44px 0 22px;
+  }
+  .site-footer a { color: #fff; }
+  .footer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 28px;
+  }
+  .site-footer h3 {
+    color: #fff;
+    font-size: 1rem;
+    margin: 0 0 10px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+  }
+  .site-footer ul { list-style: none; margin: 0; padding: 0; }
+  .site-footer li { margin-bottom: 6px; }
+  .disclaimer {
+    font-size: .9rem;
+    color: #aab1ba;
+  }
+  .footer-bottom {
+    border-top: 1px solid #444a53;
+    margin-top: 28px;
+    padding-top: 16px;
+    font-size: .88rem;
+    color: #9aa1aa;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+    justify-content: space-between;
+  }
+
+  /* ============================================================
+     RESPONSIVE — single column below 768px
+     ============================================================ */
+  @media (max-width: 768px) {
+    .nav-toggle { display: inline-flex; }
+    .nav-list {
+      display: none;
+      position: absolute;
+      left: 0; right: 0;
+      top: 64px;
+      flex-direction: column;
+      gap: 0;
+      background: var(--blue-dark);
+      padding: 8px;
+    }
+    .nav-list.open { display: flex; }
+    .nav-list a { padding: 12px 14px; }
+
+    .hero-actions { flex-direction: column; align-items: stretch; }
+    .hero-actions .btn { text-align: center; }
+
+    .success-panel dl { grid-template-columns: 1fr; gap: 2px; }
+    .success-panel dt { margin-top: 8px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<!-- ============================================================
+     SECTION 1 — HEADER (sticky nav + hero + quick-info cards)
+     ============================================================ -->
+<header class="site-header">
+  <nav class="nav container" aria-label="Primary">
+    <a class="brand" href="#home">UOB &middot; IT Service Desk</a>
+
+    <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="navList">
+      <span class="bars" aria-hidden="true"></span>
+      <span>Menu</span>
+    </button>
+
+    <ul class="nav-list" id="navList">
+      <li><a href="#home">Home</a></li>
+      <li><a href="#ticket">Submit a Ticket</a></li>
+      <li><a href="#faq">FAQ</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main id="main">
+
+  <!-- Hero banner -->
+  <section class="hero" id="home" aria-labelledby="hero-heading">
+    <div class="container">
+      <h1 id="hero-heading">IT Support, When You Need It</h1>
+      <p>Log a request with the internal Service Desk and our team will get you back
+         to work quickly &mdash; hardware, software, network, access and more.</p>
+      <div class="hero-actions">
+        <a class="btn btn-accent" href="#ticket">Submit a Ticket</a>
+        <a class="btn btn-outline-light" href="#faq">Browse FAQs</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quick-info cards -->
+  <section class="quick-info" aria-label="Service desk information">
+    <div class="container">
+      <div class="card-grid">
+        <div class="info-card">
+          <h3>Service Desk Hotline</h3>
+          <p class="big">1800-XXX-XXXX</p>
+          <p class="sub">For urgent and Critical issues</p>
+        </div>
+        <div class="info-card">
+          <h3>Operating Hours</h3>
+          <p class="big">Mon&ndash;Fri, 8am&ndash;8pm</p>
+          <p class="sub">Singapore Time (SGT)</p>
+        </div>
+        <div class="info-card">
+          <h3>Average Response Time</h3>
+          <p class="big">&lt; 4 hours</p>
+          <p class="sub">During operating hours</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 2 — IT SUPPORT TICKET FORM
+       ============================================================ -->
+  <section id="ticket" aria-labelledby="ticket-heading">
+    <div class="container">
+      <h2 id="ticket-heading">Submit an IT Support Ticket</h2>
+      <p>Fields marked with <span class="req">*</span> are required. Please do
+         <strong>not</strong> include passwords, one-time passcodes, PINs or card
+         numbers anywhere in this form.</p>
+
+      <form class="form-wrap" id="ticketForm" novalidate>
+
+        <!-- Full Name -->
+        <div class="field">
+          <label for="fullName">Full Name <span class="req">*</span></label>
+          <input type="text" id="fullName" name="fullName" autocomplete="name"
+                 aria-describedby="err-fullName">
+          <span class="error" id="err-fullName" role="alert"></span>
+        </div>
+
+        <!-- Staff ID -->
+        <div class="field">
+          <label for="staffId">Staff ID <span class="req">*</span></label>
+          <input type="text" id="staffId" name="staffId" inputmode="numeric"
+                 maxlength="6" aria-describedby="hint-staffId err-staffId">
+          <p class="hint" id="hint-staffId">6 digits, e.g. 123456</p>
+          <span class="error" id="err-staffId" role="alert"></span>
+        </div>
+
+        <!-- Corporate Email -->
+        <div class="field">
+          <label for="email">Corporate Email <span class="req">*</span></label>
+          <input type="email" id="email" name="email" autocomplete="email"
+                 aria-describedby="hint-email err-email">
+          <p class="hint" id="hint-email">Must end in @uobgroup.com</p>
+          <span class="error" id="err-email" role="alert"></span>
+        </div>
+
+        <!-- Department -->
+        <div class="field">
+          <label for="department">Department <span class="req">*</span></label>
+          <select id="department" name="department" aria-describedby="err-department">
+            <option value="">&mdash; Select a department &mdash;</option>
+            <option>Retail Banking</option>
+            <option>Corporate Banking</option>
+            <option>Treasury</option>
+            <option>Risk &amp; Compliance</option>
+            <option>Operations</option>
+            <option>Human Resources</option>
+            <option>Technology</option>
+          </select>
+          <span class="error" id="err-department" role="alert"></span>
+        </div>
+
+        <!-- Issue Category -->
+        <div class="field">
+          <label for="category">Issue Category <span class="req">*</span></label>
+          <select id="category" name="category" aria-describedby="err-category">
+            <option value="">&mdash; Select a category &mdash;</option>
+            <option>Hardware</option>
+            <option>Software / Application</option>
+            <option>Network &amp; VPN</option>
+            <option>Email &amp; Collaboration</option>
+            <option>Account &amp; Access</option>
+            <option>Security Incident</option>
+            <option>Other</option>
+          </select>
+          <span class="error" id="err-category" role="alert"></span>
+        </div>
+
+        <!-- Priority -->
+        <fieldset class="field-group" aria-describedby="err-priority">
+          <legend>Priority <span class="req">*</span></legend>
+          <div class="radio-row">
+            <label><input type="radio" name="priority" value="Low"> Low</label>
+            <label><input type="radio" name="priority" value="Medium"> Medium</label>
+            <label><input type="radio" name="priority" value="High"> High</label>
+            <label><input type="radio" name="priority" value="Critical"> Critical</label>
+          </div>
+          <p class="note">Critical issues should also be phoned in to the Service
+             Desk hotline on 1800-XXX-XXXX.</p>
+          <span class="error" id="err-priority" role="alert"></span>
+        </fieldset>
+
+        <!-- Subject -->
+        <div class="field">
+          <label for="subject">
+            Subject <span class="req">*</span>
+            <span class="counter"><span id="subjectCount">0</span>/100</span>
+          </label>
+          <input type="text" id="subject" name="subject" maxlength="100"
+                 aria-describedby="err-subject">
+          <span class="error" id="err-subject" role="alert"></span>
+        </div>
+
+        <!-- Description -->
+        <div class="field">
+          <label for="description">
+            Description <span class="req">*</span>
+            <span class="counter"><span id="descCount">0</span> characters</span>
+          </label>
+          <textarea id="description" name="description"
+                    aria-describedby="hint-desc err-description"></textarea>
+          <p class="hint" id="hint-desc">Minimum 20 characters. Describe what you
+             were doing, what happened, and any error messages.</p>
+          <div class="credential-warning" id="credWarning" role="alert">
+            It looks like you may be about to share a credential. Never include
+            passwords, OTPs, PINs or card details &mdash; IT staff will never ask
+            for them.
+          </div>
+          <span class="error" id="err-description" role="alert"></span>
+        </div>
+
+        <!-- Attachment -->
+        <div class="field">
+          <label for="attachment">Attachment</label>
+          <input type="file" id="attachment" name="attachment"
+                 accept=".png,.jpg,.pdf,.docx" aria-describedby="hint-attach">
+          <p class="hint" id="hint-attach">Optional. Accepted: .png, .jpg, .pdf, .docx</p>
+          <span class="filename" id="fileName"></span>
+        </div>
+
+        <!-- Confirmation checkbox -->
+        <div class="field checkbox-field">
+          <input type="checkbox" id="confirm" name="confirm"
+                 aria-describedby="err-confirm">
+          <label for="confirm">I confirm the information provided is accurate
+             <span class="req">*</span></label>
+        </div>
+        <span class="error" id="err-confirm" role="alert"></span>
+
+        <div class="field" style="margin-top:8px;">
+          <button type="submit" class="btn btn-primary">Submit Ticket</button>
+        </div>
+      </form>
+
+      <!-- Success panel (hidden until a valid submit) -->
+      <div class="success-panel" id="successPanel" role="status" hidden>
+        <h3>Ticket submitted successfully</h3>
+        <p>Thank you. Your request has been logged with the Service Desk. Please
+           keep your reference number for tracking.</p>
+        <dl>
+          <dt>Ticket reference</dt>
+          <dd class="ticket-ref" id="outRef"></dd>
+          <dt>Priority</dt>
+          <dd id="outPriority"></dd>
+          <dt>Expected SLA response</dt>
+          <dd id="outSla"></dd>
+        </dl>
+        <button type="button" class="btn btn-outline" id="anotherBtn">Submit another ticket</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 3 — FAQ (search filter + one-at-a-time accordion)
+       ============================================================ -->
+  <section id="faq" aria-labelledby="faq-heading">
+    <div class="container">
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+
+      <div class="faq-search-wrap">
+        <label for="faqSearch">Search FAQs</label>
+        <input type="search" id="faqSearch" placeholder="Try &quot;VPN&quot; or &quot;password&quot;"
+               aria-controls="faqList">
+      </div>
+
+      <div class="faq-list" id="faqList">
+        <div class="faq-item">
+          <h3 style="margin:0;">
+            <button class="faq-q" aria-expanded="false" aria-controls="faq-panel-1" id="faq-q-1">
+              How do I reset my network password?
+            </button>
+          </h3>
+          <div class="faq-panel" id="faq-panel-1" role="region" aria-labelledby="faq-q-1" hidden>
+            <p>Go to the Self-Service Password Portal from any corporate device and
+               choose &ldquo;Reset network password&rdquo;. You will be asked to
+               verify your identity with your registered multi-factor authentication
+               method. If you are locked out completely or off the network, call the
+               Service Desk hotline and an agent will verify you and issue a
+               temporary password that you must change at next logon.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <h3 style="margin:0;">
+            <button class="faq-q" aria-expanded="false" aria-controls="faq-panel-2" id="faq-q-2">
+              How long will my ticket take to be resolved?
+            </button>
+          </h3>
+          <div class="faq-panel" id="faq-panel-2" role="region" aria-labelledby="faq-q-2" hidden>
+            <p>First response targets are based on the priority you select: Critical
+               within 1 hour, High within 4 hours, Medium within 1 business day and
+               Low within 3 business days. Resolution time depends on the complexity
+               of the issue and whether parts, approvals or third parties are
+               involved. You will receive email updates as the ticket progresses,
+               and you can reply to any update to add information.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <h3 style="margin:0;">
+            <button class="faq-q" aria-expanded="false" aria-controls="faq-panel-3" id="faq-q-3">
+              How do I connect to the corporate VPN from home?
+            </button>
+          </h3>
+          <div class="faq-panel" id="faq-panel-3" role="region" aria-labelledby="faq-q-3" hidden>
+            <p>Open the corporate VPN client from your Start menu or Applications
+               folder and sign in with your network username and password. Approve
+               the multi-factor authentication prompt on your registered device to
+               complete the connection. If the client is missing or fails to
+               install, raise a ticket under &ldquo;Network &amp; VPN&rdquo; and
+               include your device name.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <h3 style="margin:0;">
+            <button class="faq-q" aria-expanded="false" aria-controls="faq-panel-4" id="faq-q-4">
+              My laptop won't boot &mdash; what should I do?
+            </button>
+          </h3>
+          <div class="faq-panel" id="faq-panel-4" role="region" aria-labelledby="faq-q-4" hidden>
+            <p>Hold the power button for 15 seconds to force a full shutdown, then
+               disconnect any dock, adapters and USB devices and try again on
+               charger power. If you still see no display or a diagnostic error
+               code, note the code and raise a ticket under &ldquo;Hardware&rdquo;.
+               For a Critical deadline, call the hotline so we can arrange a loaner
+               device.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <h3 style="margin:0;">
+            <button class="faq-q" aria-expanded="false" aria-controls="faq-panel-5" id="faq-q-5">
+              How do I request new software to be installed?
+            </button>
+          </h3>
+          <div class="faq-panel" id="faq-panel-5" role="region" aria-labelledby="faq-q-5" hidden>
+            <p>Submit a ticket under &ldquo;Software / Application&rdquo; with the
+               product name, version and a short business justification. Your line
+               manager will be asked to approve, and the Service Desk will confirm
+               licensing and security clearance before packaging it for deployment.
+               Approved standard applications are usually pushed to your device
+               within two business days.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <h3 style="margin:0;">
+            <button class="faq-q" aria-expanded="false" aria-controls="faq-panel-6" id="faq-q-6">
+              I received a suspicious email &mdash; what now?
+            </button>
+          </h3>
+          <div class="faq-panel" id="faq-panel-6" role="region" aria-labelledby="faq-q-6" hidden>
+            <p>Do not click any links, open attachments or reply. Use the
+               &ldquo;Report Phishing&rdquo; button in your mail client, or forward
+               the message to the phishing mailbox, then delete it. If you have
+               already clicked or entered any details, raise a ticket under
+               &ldquo;Security Incident&rdquo; immediately and call the hotline.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <h3 style="margin:0;">
+            <button class="faq-q" aria-expanded="false" aria-controls="faq-panel-7" id="faq-q-7">
+              How do I get access to a shared drive or application?
+            </button>
+          </h3>
+          <div class="faq-panel" id="faq-panel-7" role="region" aria-labelledby="faq-q-7" hidden>
+            <p>Raise a ticket under &ldquo;Account &amp; Access&rdquo; and specify
+               the exact drive path or application name and the level of access you
+               need. The request is routed to the data or system owner for approval,
+               which keeps access aligned with least-privilege policy. Once approved,
+               access is normally granted within one business day and you will get a
+               confirmation email.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <h3 style="margin:0;">
+            <button class="faq-q" aria-expanded="false" aria-controls="faq-panel-8" id="faq-q-8">
+              How do I track or update an existing ticket?
+            </button>
+          </h3>
+          <div class="faq-panel" id="faq-panel-8" role="region" aria-labelledby="faq-q-8" hidden>
+            <p>Use the reference number from your confirmation (format
+               UOB-ITSD-YYYYMMDD-####) to look up the ticket in the Service Desk
+               portal, where you can see its status and history. You can add a
+               comment or attachment at any time, or simply reply to one of the
+               ticket&rsquo;s email notifications. To escalate, mark the update as
+               urgent or call the hotline with your reference number.</p>
+          </div>
+        </div>
+      </div>
+
+      <p class="faq-empty" id="faqEmpty" hidden>No matching FAQs.</p>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============================================================
+     FOOTER — quick links, contact details, disclaimer
+     ============================================================ -->
+<footer class="site-footer" id="contact">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <h3>Quick Links</h3>
+        <ul>
+          <li><a href="#home">Home</a></li>
+          <li><a href="#ticket">Submit a Ticket</a></li>
+          <li><a href="#faq">FAQ</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Contact</h3>
+        <ul>
+          <li>Hotline: 1800-XXX-XXXX</li>
+          <li>Email: <a href="mailto:itservicedesk@uobgroup.com">itservicedesk@uobgroup.com</a></li>
+          <li>Hours: Mon&ndash;Fri, 8am&ndash;8pm SGT</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Disclaimer</h3>
+        <p class="disclaimer">This site is a training and demonstration mockup for
+           an internal IT Service Desk exercise. All names, numbers, email addresses
+           and processes shown are fictitious and for learning purposes only.</p>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span>Training demo &mdash; not affiliated with or endorsed by United Overseas Bank Limited.</span>
+      <span>&copy; 2026 UOB &middot; IT Service Desk (training demo).</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ============================================================
+     SCRIPT — all JS lives here; no network, no storage APIs
+     ============================================================ -->
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- SECTION 1: mobile nav toggle ---------- */
+  var navToggle = document.getElementById("navToggle");
+  var navList = document.getElementById("navList");
+
+  navToggle.addEventListener("click", function () {
+    var open = navList.classList.toggle("open");
+    navToggle.setAttribute("aria-expanded", String(open));
+  });
+  // Close the menu after choosing a link on mobile.
+  navList.addEventListener("click", function (e) {
+    if (e.target.tagName === "A") {
+      navList.classList.remove("open");
+      navToggle.setAttribute("aria-expanded", "false");
+    }
+  });
+
+  /* ============================================================
+     SECTION 2: ticket form
+     ============================================================ */
+  var form = document.getElementById("ticketForm");
+  var successPanel = document.getElementById("successPanel");
+
+  // In-memory store only — no localStorage, no sessionStorage, no network.
+  var submittedTickets = [];
+
+  var SLA = {
+    Critical: "1 hour",
+    High: "4 hours",
+    Medium: "1 business day",
+    Low: "3 business days"
+  };
+
+  // Live character counters
+  var subject = document.getElementById("subject");
+  var subjectCount = document.getElementById("subjectCount");
+  var description = document.getElementById("description");
+  var descCount = document.getElementById("descCount");
+
+  subject.addEventListener("input", function () {
+    subjectCount.textContent = String(subject.value.length);
+  });
+  description.addEventListener("input", function () {
+    descCount.textContent = String(description.value.length);
+    checkCredentials();
+  });
+
+  // Attachment: show the chosen filename only (no upload)
+  var attachment = document.getElementById("attachment");
+  var fileNameOut = document.getElementById("fileName");
+  attachment.addEventListener("change", function () {
+    fileNameOut.textContent = attachment.files && attachment.files.length
+      ? "Selected file: " + attachment.files[0].name
+      : "";
+  });
+
+  // Credential-safety heuristic on the description (non-blocking warning)
+  var credWarning = document.getElementById("credWarning");
+  var CRED_RE = /\b(pass\s?words?|passwd|pwd|otp|one[-\s]?time\s?(pass(word|code))?|pin|cvv|card\s?number|secret\s?(question|answer)|token)\b/i;
+  function checkCredentials() {
+    credWarning.classList.toggle("show", CRED_RE.test(description.value));
+  }
+
+  /* ---- Validators: each returns "" (valid) or an error message ---- */
+  var validators = {
+    fullName: function () {
+      return document.getElementById("fullName").value.trim()
+        ? "" : "Please enter your full name.";
+    },
+    staffId: function () {
+      var v = document.getElementById("staffId").value.trim();
+      if (!v) return "Please enter your Staff ID.";
+      return /^\d{6}$/.test(v) ? "" : "Staff ID must be exactly 6 digits.";
+    },
+    email: function () {
+      var v = document.getElementById("email").value.trim();
+      if (!v) return "Please enter your corporate email.";
+      return /^[^@\s]+@uobgroup\.com$/i.test(v)
+        ? "" : "Email must be a valid address ending in @uobgroup.com.";
+    },
+    department: function () {
+      return document.getElementById("department").value
+        ? "" : "Please select your department.";
+    },
+    category: function () {
+      return document.getElementById("category").value
+        ? "" : "Please select an issue category.";
+    },
+    priority: function () {
+      return form.querySelector('input[name="priority"]:checked')
+        ? "" : "Please select a priority.";
+    },
+    subject: function () {
+      var v = document.getElementById("subject").value.trim();
+      if (!v) return "Please enter a subject.";
+      return v.length <= 100 ? "" : "Subject must be 100 characters or fewer.";
+    },
+    description: function () {
+      var v = document.getElementById("description").value.trim();
+      if (!v) return "Please enter a description.";
+      return v.length >= 20
+        ? "" : "Description must be at least 20 characters (currently " + v.length + ").";
+    },
+    confirm: function () {
+      return document.getElementById("confirm").checked
+        ? "" : "Please confirm the information provided is accurate.";
+    }
+  };
+
+  var FIELD_ORDER = ["fullName", "staffId", "email", "department", "category",
+                     "priority", "subject", "description", "confirm"];
+
+  function controlFor(name) {
+    if (name === "priority") {
+      return form.querySelector('input[name="priority"]');
+    }
+    return document.getElementById(name);
+  }
+
+  function setError(name, message) {
+    var errEl = document.getElementById("err-" + name);
+    var control = controlFor(name);
+    if (message) {
+      errEl.textContent = message;
+      errEl.classList.add("show");
+      if (name === "priority") {
+        form.querySelectorAll('input[name="priority"]').forEach(function (r) {
+          r.setAttribute("aria-invalid", "true");
+        });
+      } else {
+        control.setAttribute("aria-invalid", "true");
+      }
+    } else {
+      errEl.textContent = "";
+      errEl.classList.remove("show");
+      if (name === "priority") {
+        form.querySelectorAll('input[name="priority"]').forEach(function (r) {
+          r.removeAttribute("aria-invalid");
+        });
+      } else {
+        control.removeAttribute("aria-invalid");
+      }
+    }
+  }
+
+  function validateField(name) {
+    var msg = validators[name] ? validators[name]() : "";
+    setError(name, msg);
+    return !msg;
+  }
+
+  // Validate on blur / change
+  FIELD_ORDER.forEach(function (name) {
+    if (name === "priority") {
+      form.querySelectorAll('input[name="priority"]').forEach(function (r) {
+        r.addEventListener("change", function () { validateField("priority"); });
+      });
+      return;
+    }
+    var control = document.getElementById(name);
+    var evt = (control.tagName === "SELECT" || control.type === "checkbox")
+      ? "change" : "blur";
+    control.addEventListener(evt, function () { validateField(name); });
+  });
+
+  /* ---- Submit ---- */
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    var firstInvalid = null;
+    FIELD_ORDER.forEach(function (name) {
+      var ok = validateField(name);
+      if (!ok && !firstInvalid) firstInvalid = name;
+    });
+
+    if (firstInvalid) {
+      var el = controlFor(firstInvalid);
+      if (el && typeof el.focus === "function") el.focus();
+      return;
+    }
+
+    // Build a mock ticket reference: UOB-ITSD-YYYYMMDD-####
+    var now = new Date();
+    var ymd = now.getFullYear().toString() +
+              String(now.getMonth() + 1).padStart(2, "0") +
+              String(now.getDate()).padStart(2, "0");
+    var rand = String(Math.floor(1000 + Math.random() * 9000));
+    var ref = "UOB-ITSD-" + ymd + "-" + rand;
+
+    var priority = form.querySelector('input[name="priority"]:checked').value;
+
+    var ticket = {
+      ref: ref,
+      name: document.getElementById("fullName").value.trim(),
+      staffId: document.getElementById("staffId").value.trim(),
+      email: document.getElementById("email").value.trim(),
+      department: document.getElementById("department").value,
+      category: document.getElementById("category").value,
+      priority: priority,
+      subject: document.getElementById("subject").value.trim(),
+      description: document.getElementById("description").value.trim(),
+      fileName: (attachment.files && attachment.files.length)
+        ? attachment.files[0].name : null,
+      submittedAt: now.toISOString()
+    };
+    submittedTickets.push(ticket);
+
+    // Populate and reveal the success panel
+    document.getElementById("outRef").textContent = ref;
+    document.getElementById("outPriority").textContent = priority;
+    document.getElementById("outSla").textContent = SLA[priority];
+
+    form.hidden = true;
+    successPanel.hidden = false;
+    successPanel.setAttribute("tabindex", "-1");
+    successPanel.focus();
+  });
+
+  /* ---- "Submit another ticket" — reset everything ---- */
+  document.getElementById("anotherBtn").addEventListener("click", function () {
+    form.reset();
+
+    FIELD_ORDER.forEach(function (name) { setError(name, ""); });
+    subjectCount.textContent = "0";
+    descCount.textContent = "0";
+    fileNameOut.textContent = "";
+    credWarning.classList.remove("show");
+
+    successPanel.hidden = true;
+    form.hidden = false;
+    document.getElementById("fullName").focus();
+  });
+
+  /* ============================================================
+     SECTION 3: FAQ accordion + live search
+     ============================================================ */
+  var faqButtons = Array.prototype.slice.call(document.querySelectorAll(".faq-q"));
+
+  faqButtons.forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var expanded = btn.getAttribute("aria-expanded") === "true";
+      // Close all others (one open at a time)
+      faqButtons.forEach(function (other) {
+        other.setAttribute("aria-expanded", "false");
+        document.getElementById(other.getAttribute("aria-controls")).hidden = true;
+      });
+      if (!expanded) {
+        btn.setAttribute("aria-expanded", "true");
+        document.getElementById(btn.getAttribute("aria-controls")).hidden = false;
+      }
+    });
+  });
+
+  var faqSearch = document.getElementById("faqSearch");
+  var faqItems = Array.prototype.slice.call(document.querySelectorAll(".faq-item"));
+  var faqEmpty = document.getElementById("faqEmpty");
+
+  faqSearch.addEventListener("input", function () {
+    var q = faqSearch.value.trim().toLowerCase();
+    var visible = 0;
+
+    faqItems.forEach(function (item) {
+      var text = item.textContent.toLowerCase();
+      var match = q === "" || text.indexOf(q) !== -1;
+      item.hidden = !match;
+      if (match) visible++;
+    });
+
+    faqEmpty.hidden = visible !== 0;
+  });
+
+})();
+</script>
+
+</body>
+</html>
