@@ -31,6 +31,9 @@ build step, package manager, or dependency, and it works from a `file://` URL.
   reference `UOB-ITSD-YYYYMMDD-####` and shows the matching SLA.
 - **Self-service runbook** — eight one-at-a-time accordion entries with live
   text search.
+- **Service desk assistant** — a scripted, offline chat widget (no network, no
+  account data) that answers the same ground as the runbook, guards against pasted
+  credentials, and can hand off to the ticket form with a category pre-selected.
 - **Footer** — navigation, contact details, a "the desk will never ask for your
   password" security notice, and the disclaimer.
 
@@ -41,8 +44,10 @@ build step, package manager, or dependency, and it works from a `file://` URL.
 - **No persistence, no network.** Submitted tickets live only in the in-memory
   `submittedTickets` array — no `localStorage`, `sessionStorage`, or requests.
 - **Never collects credentials.** No password / OTP / PIN / card-number fields; the
-  description field shows a non-blocking warning if the user types something
+  description field and the chat assistant both warn if the user types something
   credential-like.
+- **Locked down.** A restrictive `Content-Security-Policy` meta tag blocks every
+  external request and form submission; `robots` is set to `noindex`.
 
 ## Deployment
 

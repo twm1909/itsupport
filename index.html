@@ -449,6 +449,102 @@
   @keyframes rise { to { opacity: 1; transform: none; } }
 
   /* ============================================================
+     SERVICE DESK ASSISTANT — scripted chat widget, same design language
+     ============================================================ */
+  .chat { position: fixed; right: 20px; bottom: 20px; z-index: 200; font-family: var(--sans); }
+  .chat-launch {
+    display: inline-flex; align-items: center; gap: 9px; cursor: pointer;
+    background: var(--navy); color: #fff; border: 0; border-bottom: 2px solid var(--gold-bright);
+    border-radius: 999px; padding: 12px 18px; min-height: 48px; font: inherit; font-weight: 600;
+    box-shadow: var(--shadow-md); transition: background-color .15s ease;
+  }
+  .chat-launch:hover { background: var(--navy-2); }
+  .chat-launch svg { color: var(--gold-bright); flex: none; }
+
+  .chat-panel {
+    position: absolute; right: 0; bottom: 62px;
+    width: 364px; max-width: calc(100vw - 40px);
+    height: 524px; max-height: calc(100vh - 130px);
+    display: flex; flex-direction: column; overflow: hidden;
+    background: var(--surface); border: 1px solid var(--line-strong);
+    border-radius: var(--radius); box-shadow: var(--shadow-md);
+  }
+  .chat-panel[hidden] { display: none; }
+  .chat-panel:not([hidden]) { animation: chatIn .16s ease; }
+  @keyframes chatIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  .chat-head {
+    background: var(--navy); color: #fff; padding: 12px 14px 12px 16px;
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    border-bottom: 2px solid var(--gold);
+  }
+  .chat-head h2 { color: #fff; font-size: .98rem; letter-spacing: 0; }
+  .chat-head .k {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+    color: #9DB1C6; margin-bottom: 3px;
+  }
+  .chat-x {
+    background: transparent; border: 0; color: #C7D2DE; cursor: pointer;
+    min-width: 36px; min-height: 36px; border-radius: 6px; display: grid; place-items: center;
+  }
+  .chat-x:hover { background: rgba(255,255,255,.12); color: #fff; }
+
+  .chat-log {
+    flex: 1; overflow-y: auto; padding: 16px; background: var(--paper);
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .msg { display: flex; gap: 8px; max-width: 92%; }
+  .msg.bot { align-self: flex-start; }
+  .msg.user { align-self: flex-end; }
+  .msg .tag {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .06em; color: var(--ink-soft);
+    background: var(--surface); border: 1px solid var(--line); border-radius: 5px;
+    padding: 2px 5px; height: fit-content; margin-top: 3px; flex: none;
+  }
+  .msg .bubble {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 10px; border-top-left-radius: 3px;
+    padding: 10px 13px; font-size: .92rem; line-height: 1.5; color: var(--ink);
+  }
+  .msg.user .bubble {
+    background: var(--p-med-bg); border-color: var(--p-med-line); color: var(--p-med-ink);
+    border-top-left-radius: 10px; border-top-right-radius: 3px;
+  }
+  .msg .bubble p { margin: 0; }
+  .chat-action {
+    margin-top: 10px; display: inline-flex; align-items: center; gap: 6px;
+    font: inherit; font-weight: 600; font-size: .84rem; cursor: pointer;
+    background: var(--blue); color: #fff; border: 0; border-radius: 6px; padding: 8px 12px; min-height: 36px;
+  }
+  .chat-action:hover { background: var(--blue-ink); }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; align-self: flex-start; max-width: 100%; }
+  .chip {
+    font-family: var(--mono); font-size: 12px; cursor: pointer;
+    background: var(--surface); color: var(--navy); border: 1px solid var(--line-strong);
+    border-radius: 999px; padding: 7px 12px; min-height: 34px;
+  }
+  .chip:hover { border-color: var(--gold); color: var(--gold-text); }
+
+  .dots { display: inline-flex; gap: 4px; padding: 3px 0; }
+  .dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-soft); animation: blink 1s infinite ease-in-out; }
+  .dots i:nth-child(2) { animation-delay: .15s; }
+  .dots i:nth-child(3) { animation-delay: .3s; }
+  @keyframes blink { 0%, 80%, 100% { opacity: .25; } 40% { opacity: 1; } }
+
+  .chat-input { display: flex; gap: 8px; padding: 12px; border-top: 1px solid var(--line); background: var(--surface); }
+  .chat-input input {
+    flex: 1; font: inherit; color: var(--ink);
+    border: 1.5px solid var(--line-strong); border-radius: 8px; padding: 10px 12px;
+  }
+  .chat-input input:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(0,83,155,.15); }
+  .chat-send {
+    background: var(--blue); color: #fff; border: 0; border-radius: 8px;
+    min-width: 44px; min-height: 44px; display: grid; place-items: center; cursor: pointer; flex: none;
+  }
+  .chat-send:hover { background: var(--blue-ink); }
+
+  /* ============================================================
      RESPONSIVE — single column below 768px
      ============================================================ */
   @media (max-width: 900px) {
@@ -475,6 +571,11 @@
     .success dl { grid-template-columns: 1fr; gap: 2px; }
     .success dt { margin-top: 8px; }
     .footer-grid { grid-template-columns: 1fr; gap: 24px; }
+
+    .chat { right: 12px; bottom: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); }
+    .chat-launch span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    .chat-launch { padding: 14px; border-radius: 50%; }
+    .chat-panel { width: calc(100vw - 24px); bottom: 60px; height: calc(100vh - 150px); }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -985,6 +1086,39 @@
 </footer>
 
 <!-- ============================================================
+     SERVICE DESK ASSISTANT — scripted, runs entirely offline,
+     sees no account data. Same design language as the rest of the page.
+     ============================================================ -->
+<div class="chat" id="chat">
+  <button class="chat-launch" id="chatLaunch" aria-expanded="false" aria-controls="chatPanel">
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3 4.5h14v9H8l-4 3v-3H3v-9Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M6.5 8h7M6.5 10.5h4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    <span>Ask the desk</span>
+  </button>
+
+  <div class="chat-panel" id="chatPanel" role="dialog" aria-modal="false" aria-labelledby="chatTitle" hidden>
+    <div class="chat-head">
+      <div>
+        <p class="k">Scripted &middot; no account data</p>
+        <h2 id="chatTitle">Service desk assistant</h2>
+      </div>
+      <button class="chat-x" id="chatClose" aria-label="Close the assistant">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m4 4 8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+
+    <div class="chat-log" id="chatLog" role="log" aria-live="polite" aria-atomic="false"></div>
+
+    <form class="chat-input" id="chatForm">
+      <label for="chatText" class="visually-hidden">Type your question</label>
+      <input type="text" id="chatText" autocomplete="off" placeholder="Ask about VPN, passwords, tickets&hellip;">
+      <button type="submit" class="chat-send" aria-label="Send message">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M2.5 9h12M9 3.5 14.5 9 9 14.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- ============================================================
      SCRIPT — one IIFE; no network, no storage APIs
      ============================================================ -->
 <script>
@@ -1297,6 +1431,206 @@
       if (match) { visible++; }
     });
     faqEmpty.hidden = visible !== 0;
+  });
+
+  /* ============================================================
+     Service desk assistant — scripted, offline, sees no account data.
+     Answers the same ground the runbook covers; can hand off to the
+     ticket form (optionally pre-selecting a category / priority).
+     ============================================================ */
+  var chatLaunch = document.getElementById("chatLaunch");
+  var chatPanel = document.getElementById("chatPanel");
+  var chatClose = document.getElementById("chatClose");
+  var chatLog = document.getElementById("chatLog");
+  var chatForm = document.getElementById("chatForm");
+  var chatText = document.getElementById("chatText");
+  var chatStarted = false;
+
+  var HOTLINE = "1800-XXX-XXXX";
+  var DEFAULT_CHIPS = ["Reset my password", "VPN won't connect", "How long will my ticket take?", "Log a ticket"];
+  var GREETING = "I’m the service desk assistant — a scripted helper, not a live agent, and I can’t see any account data. Ask me about passwords, VPN, laptops, software, suspicious email, access requests or ticket status.";
+
+  var FORM_ACTION = { label: "Open the ticket form", goto: true };
+
+  /* first match wins — specific intents before general ones */
+  var INTENTS = [
+    { re: /locked out|can'?t (log ?in|sign ?in|get in)|account.*(locked|disabled)/,
+      a: "Call the Service Desk hotline on " + HOTLINE + ". An agent will verify your identity and issue a one-time temporary password that you’ll change at next sign-in.",
+      chips: ["Log a ticket"] },
+    { re: /vpn.*(drop|disconnect|unstable|keeps|slow|lag)|(drop|disconnect).*vpn/,
+      a: "Intermittent drops are usually the home connection. Try a wired connection or move closer to the router. If it keeps happening, log a ticket under “Network & VPN” with the times it drops and any error code.",
+      chips: ["Log a ticket"], action: { label: "Open a Network & VPN ticket", goto: true, category: "Network & VPN" } },
+    { re: /\bvpn\b|remote access|work(ing)? from home.*connect|corporate network.*home/,
+      a: "Open the corporate VPN client, sign in with your network username and password, and approve the MFA prompt on your registered device. If the client is missing or won’t install, log a ticket under “Network & VPN” with your device name.",
+      chips: ["VPN keeps dropping", "Log a ticket"], action: { label: "Open a Network & VPN ticket", goto: true, category: "Network & VPN" } },
+    { re: /password|passphrase|forgot.*(login|log ?in)|reset.*(login|account|network)/,
+      a: "Use the Self-Service Password Portal on any corporate device and choose “Reset network password”, then verify with your registered MFA. Fully locked out or off the network? Call the hotline on " + HOTLINE + " and an agent will issue a temporary password.",
+      chips: ["I'm fully locked out", "Log a ticket"] },
+    { re: /(laptop|desktop|computer|machine|\bpc\b).*(boot|start|won'?t|not|dead|black screen|blue screen|bsod|freeze|frozen|crash|power|charge|screen)|won'?t (boot|turn on|start ?up|power on)|black screen|\bbsod\b/,
+      a: "If it won’t boot: hold the power button 15 seconds for a full shutdown, unplug the dock and USB devices, and try again on charger power. Still no display or a diagnostic code? Note the code and log a ticket under “Hardware” — for a Critical deadline, call the hotline for a loaner.",
+      chips: ["Log a ticket", "Call the hotline"], action: { label: "Open a Hardware ticket", goto: true, category: "Hardware" } },
+    { re: /\binstall|\b(request|need|want|get|new)\b.*(software|application|app|program|tool|licen[cs]e)|software.*(install|request)/,
+      a: "Log a ticket under “Software / Application” with the product name, version and a short business reason. Your line manager approves, then the desk checks licensing and security before it’s deployed — usually within two business days for standard apps.",
+      chips: ["Log a ticket"], action: { label: "Open a Software ticket", goto: true, category: "Software / Application" } },
+    { re: /phish|suspicious email|scam|dodgy (email|link|message)|weird email|i (clicked|opened|entered).*(link|attachment|details)|malware|virus|compromis|breach|hacked/,
+      a: "Don’t click links, open attachments or reply. Use the “Report Phishing” button in your mail client (or forward it to the phishing mailbox) and delete it. If you already clicked or entered details, log a Security Incident now and call the hotline on " + HOTLINE + ".",
+      chips: ["Log a security incident", "Call the hotline"], action: { label: "Open a Security Incident ticket", goto: true, category: "Security Incident", priority: "Critical" } },
+    { re: /shared (drive|folder)|network drive|access to|permission|can'?t (open|access|see)|add me to|group membership/,
+      a: "Log a ticket under “Account & Access” with the exact drive path or application name and the access level you need. It goes to the data owner for approval and is usually granted within one business day.",
+      chips: ["Log a ticket"], action: { label: "Open an Account & Access ticket", goto: true, category: "Account & Access" } },
+    { re: /what.*(counts as |is )?(critical|p1)|define.*critical/,
+      a: "Critical (P1) is a major outage or a security incident with no workaround — for example a system down for a whole team. Every Critical incident must also be phoned in to the hotline on " + HOTLINE + ".",
+      chips: ["How long will my ticket take?", "Log a ticket"] },
+    { re: /how long|response time|\bsla\b|priorit|\bp[1-4]\b|when will|turnaround|how (fast|quick)/,
+      a: "First-response targets by priority: Critical 1 hour, High 4 hours, Medium 1 business day, Low 3 business days — during desk hours (Mon–Fri 08:00–20:00 SGT). Those are response, not resolution, times.",
+      chips: ["What counts as Critical?", "Log a ticket"] },
+    { re: /(track|check|status|update|chase|escalate|where.*is).*(ticket|request|reference|case)|uob-itsd|status of my|my (open )?(ticket|request|case)/,
+      a: "Use your reference (UOB-ITSD-YYYYMMDD-####) in the service desk portal to see status and history, or reply to any of the ticket’s email updates. To escalate, mark the update urgent or call the hotline with your reference.",
+      chips: ["Log a ticket"] },
+    { re: /(log|raise|submit|create|open|file|start|make|new|register).*(ticket|incident|request|case)|report.*(issue|problem|fault)/,
+      a: "I can take you there. The form asks who you are, what’s wrong, a priority and a short description — you’ll get a reference and a response time straight away.",
+      chips: [], action: FORM_ACTION },
+    { re: /hotline|phone number|call (you|someone|the desk)|contact number|speak to|talk to (a|someone|an agent)|\b1800\b/,
+      a: "Service Desk hotline: " + HOTLINE + ", Mon–Fri 08:00–20:00 SGT. Phone in every Critical (P1) incident in addition to logging it.",
+      chips: ["Log a ticket"] },
+    { re: /hours|when.*(open|available|closed)|weekend|after hours|out of hours|holiday/,
+      a: "The desk is open Mon–Fri, 08:00–20:00 SGT. Outside those hours you can still log a ticket — it’s picked up when the desk reopens; Critical incidents go to the hotline.",
+      chips: ["Log a ticket"] },
+    { re: /\b(thanks|thank you|thx|ta|cheers|nice|great|perfect|got it|helpful)\b/,
+      a: "Anytime. If anything’s still broken, log a ticket and the desk will pick it up.",
+      chips: ["Log a ticket"] },
+    { re: /^\s*(hi|hey|hello|yo|help|start|menu|good (morning|afternoon|evening))\b|what can you (do|help)|who are you|how does this work/,
+      a: GREETING, chips: DEFAULT_CHIPS }
+  ];
+
+  /* narrow guard: catches a credential VALUE being pasted, not the topic word */
+  var CHAT_CRED_RE = /((pass\s?word|passcode|passwd|pwd|otp|\bpin\b|cvv|card\s?number)\s*(is|:|=|\bwas\b)\s*\S)|\b\d{13,19}\b/i;
+
+  function el(tag, cls) {
+    var n = document.createElement(tag);
+    if (cls) { n.className = cls; }
+    return n;
+  }
+  function scrollLog() { chatLog.scrollTop = chatLog.scrollHeight; }
+  function clearChips() {
+    var c = chatLog.querySelectorAll(".chips");
+    for (var i = 0; i < c.length; i++) { c[i].parentNode.removeChild(c[i]); }
+  }
+  function prefersReduce() {
+    return window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }
+
+  function addChips(list) {
+    clearChips();
+    if (!list || !list.length) { return; }
+    var wrap = el("div", "chips");
+    list.forEach(function (label) {
+      var b = el("button", "chip");
+      b.type = "button";
+      b.textContent = label;
+      b.addEventListener("click", function () { handleUser(label); });
+      wrap.appendChild(b);
+    });
+    chatLog.appendChild(wrap);
+    scrollLog();
+  }
+
+  function userSay(text) {
+    clearChips();
+    var m = el("div", "msg user");
+    var b = el("div", "bubble");
+    var p = el("p"); p.textContent = text; b.appendChild(p);
+    m.appendChild(b);
+    chatLog.appendChild(m);
+    scrollLog();
+  }
+
+  function botSay(text, chips, action) {
+    var typing = el("div", "msg bot");
+    typing.setAttribute("aria-hidden", "true");
+    typing.innerHTML = '<span class="tag">SDA</span><div class="bubble"><span class="dots"><i></i><i></i><i></i></span></div>';
+    chatLog.appendChild(typing);
+    scrollLog();
+
+    window.setTimeout(function () {
+      if (typing.parentNode) { typing.parentNode.removeChild(typing); }
+      var m = el("div", "msg bot");
+      var tag = el("span", "tag"); tag.textContent = "SDA";
+      var b = el("div", "bubble");
+      var p = el("p"); p.textContent = text; b.appendChild(p);
+      if (action) {
+        var ab = el("button", "chat-action");
+        ab.type = "button";
+        ab.textContent = action.label || "Open the ticket form";
+        ab.addEventListener("click", function () { fireAction(action); });
+        b.appendChild(ab);
+      }
+      m.appendChild(tag);
+      m.appendChild(b);
+      chatLog.appendChild(m);
+      scrollLog();
+      addChips(chips);
+    }, prefersReduce() ? 0 : 460);
+  }
+
+  function fireAction(action) {
+    closeChat();
+    if (action.category) {
+      var c = document.getElementById("category");
+      c.value = action.category;
+      c.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+    if (action.priority) {
+      var r = document.querySelector('input[name="priority"][value="' + action.priority + '"]');
+      if (r) { r.checked = true; r.dispatchEvent(new Event("change", { bubbles: true })); }
+    }
+    document.getElementById("ticket").scrollIntoView();
+    window.setTimeout(function () { document.getElementById("fullName").focus(); }, 320);
+  }
+
+  function reply(text) {
+    if (CHAT_CRED_RE.test(text)) {
+      botSay("Stop — don’t share that here. The service desk never needs your password, OTP, PIN or card number, and neither do I. If someone asked you for it, report it as a security incident.",
+        null, { label: "Log a security incident", goto: true, category: "Security Incident", priority: "Critical" });
+      return;
+    }
+    var t = text.toLowerCase();
+    for (var i = 0; i < INTENTS.length; i++) {
+      if (INTENTS[i].re.test(t)) {
+        botSay(INTENTS[i].a, INTENTS[i].chips || DEFAULT_CHIPS, INTENTS[i].action);
+        return;
+      }
+    }
+    botSay("I can’t help with that one. I can cover passwords, VPN, laptop won’t boot, software requests, suspicious email, shared-drive access, ticket status and SLAs — or log a ticket for anything else.", DEFAULT_CHIPS);
+  }
+
+  function handleUser(text) {
+    text = (text || "").trim();
+    if (!text) { return; }
+    userSay(text);
+    chatText.value = "";
+    reply(text);
+  }
+
+  function openChat() {
+    chatPanel.hidden = false;
+    chatLaunch.setAttribute("aria-expanded", "true");
+    if (!chatStarted) { chatStarted = true; botSay(GREETING, DEFAULT_CHIPS); }
+    window.setTimeout(function () { chatText.focus(); }, 40);
+  }
+  function closeChat() {
+    chatPanel.hidden = true;
+    chatLaunch.setAttribute("aria-expanded", "false");
+    chatLaunch.focus();
+  }
+
+  chatLaunch.addEventListener("click", function () {
+    if (chatPanel.hidden) { openChat(); } else { closeChat(); }
+  });
+  chatClose.addEventListener("click", closeChat);
+  chatForm.addEventListener("submit", function (e) { e.preventDefault(); handleUser(chatText.value); });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && !chatPanel.hidden) { closeChat(); }
   });
 
 })();
