@@ -1,7 +1,7 @@
 ---
 description: Security-scan, capture a site screenshot into the README, push to GitHub, enable GitHub Pages via Actions, and fill in the repo About section
 argument-hint: "[github repo url or owner/repo — optional, defaults to origin]"
-allowed-tools: Bash(git status:*), Bash(git remote:*), Bash(git remote get-url:*), Bash(git remote set-url:*), Bash(git remote add:*), Bash(git ls-files:*), Bash(git add:*), Bash(git commit:*), Bash(git push:*), Bash(git log:*), Bash(git diff:*), Bash(git branch:*), Bash(git rev-parse:*), Bash(git cherry:*), Bash(gh auth status:*), Bash(gh repo view:*), Bash(gh repo edit:*), Bash(gh api:*), Bash(gh workflow run:*), Bash(gh workflow list:*), Bash(gh run list:*), Bash(gh run view:*), Bash(gh browse:*), Bash(mkdir:*), Bash(mv:*), Bash(find:*), Bash(ls:*), Bash(curl:*), Read, Write, Edit, Grep, Glob, mcp__playwright__browser_navigate, mcp__playwright__browser_resize, mcp__playwright__browser_wait_for, mcp__playwright__browser_take_screenshot, mcp__playwright__browser_close
+allowed-tools: Bash(git status:*), Bash(git remote:*), Bash(git remote get-url:*), Bash(git remote set-url:*), Bash(git remote add:*), Bash(git ls-files:*), Bash(git add:*), Bash(git commit:*), Bash(git push:*), Bash(git log:*), Bash(git diff:*), Bash(git branch:*), Bash(git rev-parse:*), Bash(git cherry:*), Bash(gh auth status:*), Bash(gh repo view:*), Bash(gh repo edit:*), Bash(gh api:*), Bash(gh workflow run:*), Bash(gh workflow list:*), Bash(gh run list:*), Bash(gh run view:*), Bash(gh browse:*), Bash(mkdir:*), Bash(mv:*), Bash(find:*), Bash(ls:*), Bash(curl:*), Read, Write, Edit, Grep, Glob, mcp__playwright__browser_navigate, mcp__playwright__browser_resize, mcp__playwright__browser_wait_for, mcp__playwright__browser_evaluate, mcp__playwright__browser_take_screenshot, mcp__playwright__browser_close
 ---
 
 You are publishing this repository to GitHub. Work through the steps **in order**.
@@ -68,15 +68,22 @@ Playwright MCP browser.
   `docs/screenshot.png`, and continue to Step 4 — do **not** fail the publish.
 - Otherwise:
   1. `browser_resize` to 1280 × 900.
-  2. `browser_navigate` to the local file: `file://` + the absolute path to
-     `index.html` in this repo (this captures the exact state being published and
-     needs no network).
+  2. `browser_navigate` to the live Pages URL from Step 1. The Playwright MCP
+     server blocks the `file:` protocol, so a local `index.html` cannot be loaded.
+     If the Pages site is not deployed yet (first publish — it 404s), print a
+     warning, keep any existing screenshot, and continue; the next run will capture
+     it once Pages is live.
   3. `browser_wait_for` time 1 (let fonts and layout settle).
-  4. `browser_take_screenshot` — `type: png`, `scale: css`, viewport only (not
+  4. `browser_evaluate` to reset scroll position — the page sets
+     `scroll-behavior: smooth` and the browser may restore a prior scroll offset:
+     `() => { document.documentElement.style.scrollBehavior = 'auto'; window.scrollTo(0, 0); document.documentElement.scrollTop = 0; }`
+  5. `browser_take_screenshot` — `type: png`, `scale: css`, viewport only (not
      `fullPage`), `filename: "screenshot.png"`.
-  5. `browser_close`.
-  6. The file lands in the Playwright output dir or the repo root; `find` it, then
+  6. `browser_close`.
+  7. The file lands in the Playwright output dir or the repo root; `find` it, then
      `mkdir -p docs` and `mv` it to `docs/screenshot.png` (overwrite).
+  8. `Read` the resulting `docs/screenshot.png` to confirm it shows the hero
+     (headline + buttons) and is not scrolled past it; if it is, redo from step 4.
 - Make sure `.gitignore` contains `.playwright-mcp/` so the MCP working directory
   is never staged.
 
