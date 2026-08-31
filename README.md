@@ -10,7 +10,7 @@ numbers, email domains (`@uobgroup.com`), SLAs, and FAQ content are fictitious.
 
 https://twm1909.github.io/itsupport/
 
-![Screenshot of the IT Service Desk demo — hero banner and quick-info cards](docs/screenshot.png)
+![Screenshot of the IT Service Desk demo — desk-status strip, hero docket, and priority/SLA reference card](docs/screenshot.png)
 
 ## Running locally
 
@@ -20,13 +20,19 @@ build step, package manager, or dependency, and it works from a `file://` URL.
 
 ## What's inside
 
-- **Header** — sticky nav with mobile hamburger, hero banner, three quick-info cards.
-- **Ticket form** — inline validation on blur and submit (Staff ID `######`,
-  corporate email must end `@uobgroup.com`, priority, live character counters,
-  attachment filename display, confirmation checkbox). A clean submit generates a
-  mock reference `UOB-ITSD-YYYYMMDD-####` and shows the matching SLA.
-- **FAQ** — eight one-at-a-time accordion items with live text search.
-- **Footer** — quick links, contact details, and the disclaimer.
+- **Header** — sticky nav (mobile hamburger) plus a persistent monospace
+  desk-status strip (hours, average first-response, P1 hotline).
+- **Hero** — the desk's response commitment as a "docket", next to a
+  priority → first-response SLA reference card.
+- **Incident intake form** — inline validation on blur and submit, a focusable
+  error summary, a step rail (who / what / confirm), priority as a triage scale
+  with per-tier SLA budgets, live character counters, attachment filename display,
+  and a non-blocking credential-safety warning. A clean submit generates a mock
+  reference `UOB-ITSD-YYYYMMDD-####` and shows the matching SLA.
+- **Self-service runbook** — eight one-at-a-time accordion entries with live
+  text search.
+- **Footer** — navigation, contact details, a "the desk will never ask for your
+  password" security notice, and the disclaimer.
 
 ## Constraints (kept deliberately)
 

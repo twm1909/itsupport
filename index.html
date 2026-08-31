@@ -5,507 +5,482 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>UOB · IT Service Desk (Training Demo)</title>
 
+<!-- Security: this is a public training mock of an internal desk. Lock the page
+     down so it can make no network requests and submit nowhere, and keep it out
+     of search indexes so it is not mistaken for a real bank page. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230A1B2E'/%3E%3Crect x='7' y='9' width='18' height='3' fill='%23B7791F'/%3E%3Crect x='7' y='15' width='18' height='3' fill='%23ffffff'/%3E%3Crect x='7' y='21' width='12' height='3' fill='%23ffffff'/%3E%3C/svg%3E">
+
 <!-- ============================================================
      STYLES — all CSS lives here, no external dependencies
      ============================================================ -->
 <style>
   /* ---- Design tokens ---- */
   :root {
+    /* Palette: banking "trust navy + premium gold" (ui-ux-pro-max), one signal accent */
+    --navy: #0A1B2E;
+    --navy-2: #12263C;
     --blue: #00539B;
-    --blue-dark: #003e75;
-    --accent: #E8A33D;
-    --accent-dark: #b97e1f;
-    --bg: #ffffff;
-    --surface: #f4f6f9;
-    --border: #d7dde5;
-    --text: #2C3038;
-    --text-muted: #5b626d;
-    --error: #c62828;
-    --success: #1b7f3b;
-    --success-bg: #e8f5ec;
-    --warning: #8a5a00;
-    --warning-bg: #fff4e0;
+    --blue-ink: #003B6F;
+    --gold: #B7791F;          /* borders, rings, underlines, large display only */
+    --gold-text: #8A5712;     /* gold when used as small text on light (AA) */
+    --gold-bright: #E8A33D;   /* decorative highlights only */
+
+    --paper: #FBFBF9;
+    --surface: #FFFFFF;
+    --line: #E3E6EA;
+    --line-strong: #CDD3DA;
+    --ink: #1E2430;
+    --ink-soft: #5A6472;
+
+    /* Operational status ramp for priority (queued amber / running green / etc.) */
+    --p-low-bg: #E7F3EC;   --p-low-ink: #1E5A40;   --p-low-line: #9CCBB2;
+    --p-med-bg: #E6EFF7;   --p-med-ink: #1B4E7A;   --p-med-line: #A8C6E0;
+    --p-high-bg: #FBEFDD;  --p-high-ink: #7A4E12;  --p-high-line: #E3C088;
+    --p-crit-bg: #F9E4E1;  --p-crit-ink: #8E2A20;  --p-crit-line: #E0A79F;
+
+    --danger: #C0392B;
+    --danger-bg: #FBEAE7;
+    --ok: #2E7D5B;
+    --ok-bg: #E7F4EC;
+    --warn-bg: #FCF3E2;
+    --warn-ink: #7A5312;
+    --warn-line: #E7CB93;
+
     --radius: 8px;
-    --shadow: 0 1px 3px rgba(0,0,0,.10), 0 1px 2px rgba(0,0,0,.06);
-    --shadow-lg: 0 6px 20px rgba(0,0,0,.10);
+    --radius-sm: 6px;
+    --shadow-sm: 0 1px 2px rgba(10,27,46,.06), 0 1px 3px rgba(10,27,46,.08);
+    --shadow-md: 0 4px 12px rgba(10,27,46,.08), 0 12px 28px rgba(10,27,46,.08);
+
     --maxw: 1120px;
-    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --nav-h: 64px;
+    --strip-h: 38px;
+
+    --sans: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    --mono: "Cascadia Code", ui-monospace, "SF Mono", "Segoe UI Mono", "Roboto Mono", Consolas, "Liberation Mono", monospace;
   }
 
   /* ---- Base ---- */
   *, *::before, *::after { box-sizing: border-box; }
   html {
     scroll-behavior: smooth;
-    scroll-padding-top: 84px; /* keep anchor targets clear of the sticky nav */
+    /* keep anchored targets clear of the sticky nav + status strip */
+    scroll-padding-top: calc(var(--nav-h) + var(--strip-h) + 16px);
   }
   body {
     margin: 0;
-    font-family: var(--font);
+    font-family: var(--sans);
     font-size: 16px;
     line-height: 1.6;
-    color: var(--text);
-    background: var(--bg);
+    color: var(--ink);
+    background: var(--paper);
+    -webkit-font-smoothing: antialiased;
   }
-  h1, h2, h3 { line-height: 1.25; color: var(--text); }
-  h2 { font-size: 1.6rem; margin: 0 0 .5rem; }
-  p { margin: 0 0 1rem; }
-  a { color: var(--blue); }
-  img { max-width: 100%; }
+  h1, h2, h3, h4 {
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: var(--navy);
+    margin: 0;
+    text-wrap: balance;
+  }
+  p { margin: 0; }
+  a { color: var(--blue); text-underline-offset: 3px; }
+  a:hover { color: var(--blue-ink); }
+  svg { display: block; }
 
-  .container {
-    max-width: var(--maxw);
-    margin-inline: auto;
-    padding-inline: 24px;
+  .container { max-width: var(--maxw); margin-inline: auto; padding-inline: 24px; }
+  .section { padding: 72px 0; }
+  .section + .section { border-top: 1px solid var(--line); }
+
+  /* Mono utility label — the operational vernacular of the page */
+  .kicker {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
   }
-  section { padding: 56px 0; }
-  section:nth-of-type(even) { background: var(--surface); }
+  .kicker .seq { color: var(--gold-text); }
+
+  .section-head { max-width: 62ch; margin-bottom: 36px; }
+  .section-head h2 { font-size: clamp(1.55rem, 3vw, 2.05rem); margin-top: 10px; }
+  .section-head p { color: var(--ink-soft); margin-top: 12px; font-size: 1.05rem; }
 
   /* ---- Accessibility helpers ---- */
   :focus-visible {
-    outline: 3px solid var(--accent);
+    outline: 3px solid var(--gold);
     outline-offset: 2px;
     border-radius: 3px;
   }
   .skip-link {
-    position: absolute;
-    left: -9999px;
-    top: 0;
-    background: var(--blue);
-    color: #fff;
-    padding: 10px 16px;
-    z-index: 200;
+    position: absolute; left: -9999px; top: 0; z-index: 200;
+    background: var(--navy); color: #fff; padding: 10px 16px;
     border-radius: 0 0 var(--radius) 0;
   }
-  .skip-link:focus {
-    left: 0;
-  }
+  .skip-link:focus { left: 0; }
   .visually-hidden {
-    position: absolute !important;
-    width: 1px; height: 1px;
-    padding: 0; margin: -1px;
-    overflow: hidden; clip: rect(0 0 0 0);
+    position: absolute !important; width: 1px; height: 1px;
+    padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0);
     white-space: nowrap; border: 0;
   }
 
   /* ---- Buttons ---- */
   .btn {
-    display: inline-block;
-    font: inherit;
-    font-weight: 600;
-    cursor: pointer;
-    border-radius: var(--radius);
-    padding: 12px 22px;
-    border: 2px solid transparent;
-    text-decoration: none;
-    transition: background-color .15s ease, color .15s ease, border-color .15s ease;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    font: inherit; font-weight: 600; cursor: pointer;
+    min-height: 46px; padding: 12px 22px;
+    border-radius: var(--radius); border: 1.5px solid transparent;
+    text-decoration: none; transition: transform .15s ease, background-color .15s ease, border-color .15s ease, color .15s ease;
   }
-  .btn-primary {
-    background: var(--blue);
-    color: #fff;
-    border-color: var(--blue);
+  .btn:hover { transform: translateY(-1px); }
+  .btn-primary { background: var(--blue); color: #fff; border-color: var(--blue); }
+  .btn-primary:hover { background: var(--blue-ink); border-color: var(--blue-ink); color: #fff; }
+  .btn-ghost { background: transparent; color: var(--navy); border-color: var(--line-strong); }
+  .btn-ghost:hover { border-color: var(--navy); color: var(--navy); background: rgba(10,27,46,.03); }
+  .btn-on-navy { background: transparent; color: #fff; border-color: rgba(255,255,255,.5); }
+  .btn-on-navy:hover { background: rgba(255,255,255,.12); color: #fff; border-color: #fff; }
+  /* primary action carries the single gold accent as an underline mark */
+  .btn-primary.is-lead { position: relative; }
+  .btn-primary.is-lead::after {
+    content: ""; position: absolute; left: 22px; right: 22px; bottom: 7px;
+    height: 2px; background: var(--gold-bright); border-radius: 2px;
   }
-  .btn-primary:hover { background: var(--blue-dark); border-color: var(--blue-dark); }
-  .btn-accent {
-    background: var(--accent);
-    color: #2b2100;
-    border-color: var(--accent);
-  }
-  .btn-accent:hover { background: var(--accent-dark); border-color: var(--accent-dark); color: #241b00; }
-  .btn-outline {
-    background: transparent;
-    color: var(--blue);
-    border-color: var(--blue);
-  }
-  .btn-outline:hover { background: rgba(0,83,155,.08); }
-  .btn-outline-light {
-    background: transparent;
-    color: #fff;
-    border-color: #fff;
-  }
-  .btn-outline-light:hover { background: rgba(255,255,255,.15); }
+  .btn[disabled] { opacity: .7; cursor: progress; transform: none; }
 
   /* ============================================================
-     SECTION 1 — HEADER / NAV / HERO
+     HEADER — sticky nav + persistent desk-status strip (signature)
      ============================================================ */
-  .site-header {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: var(--blue);
-    color: #fff;
-    box-shadow: var(--shadow);
-  }
+  .site-header { position: sticky; top: 0; z-index: 100; }
+
   .nav {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    min-height: 64px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    min-height: var(--nav-h);
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
   }
   .brand {
-    font-weight: 700;
-    font-size: 1.1rem;
-    color: #fff;
-    text-decoration: none;
-    white-space: nowrap;
+    font-weight: 700; font-size: 1.02rem; color: var(--navy);
+    text-decoration: none; letter-spacing: -0.01em; display: inline-flex; align-items: center; gap: 10px;
   }
-  .brand:hover { color: #fff; }
+  .brand .mark {
+    width: 27px; height: 27px; border-radius: 6px; background: var(--navy);
+    display: grid; place-items: center; flex: none;
+    font-family: var(--mono); font-weight: 700; font-size: 11px; color: #fff; letter-spacing: .02em;
+    border-bottom: 2px solid var(--gold-bright);
+  }
+
   .nav-toggle {
-    display: none;
-    background: transparent;
-    border: 2px solid rgba(255,255,255,.6);
-    border-radius: var(--radius);
-    color: #fff;
-    font: inherit;
-    padding: 6px 10px;
-    cursor: pointer;
-    align-items: center;
-    gap: 8px;
+    display: none; align-items: center; gap: 8px;
+    background: transparent; border: 1.5px solid var(--line-strong); border-radius: var(--radius);
+    color: var(--navy); font: inherit; font-weight: 600; padding: 8px 12px; cursor: pointer; min-height: 42px;
   }
-  .nav-toggle .bars {
-    display: inline-block;
-    width: 18px; height: 2px;
-    background: #fff;
-    position: relative;
-  }
-  .nav-toggle .bars::before,
-  .nav-toggle .bars::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    width: 18px; height: 2px;
-    background: #fff;
-  }
-  .nav-toggle .bars::before { top: -6px; }
-  .nav-toggle .bars::after { top: 6px; }
+  .nav-toggle .bars { position: relative; width: 16px; height: 2px; background: var(--navy); display: block; }
+  .nav-toggle .bars::before, .nav-toggle .bars::after { content: ""; position: absolute; left: 0; width: 16px; height: 2px; background: var(--navy); }
+  .nav-toggle .bars::before { top: -5px; } .nav-toggle .bars::after { top: 5px; }
 
-  .nav-list {
-    list-style: none;
-    display: flex;
-    gap: 8px;
-    margin: 0;
-    padding: 0;
-  }
+  .nav-list { list-style: none; display: flex; gap: 4px; margin: 0; padding: 0; }
   .nav-list a {
-    display: block;
-    color: #fff;
-    text-decoration: none;
-    padding: 10px 14px;
-    border-radius: var(--radius);
-    font-weight: 600;
+    display: block; color: var(--ink); text-decoration: none; font-weight: 600;
+    padding: 9px 13px; border-radius: var(--radius-sm); font-size: .95rem;
   }
-  .nav-list a:hover { background: rgba(255,255,255,.12); }
+  .nav-list a:hover { background: rgba(10,27,46,.05); color: var(--navy); }
 
-  .hero {
-    background: linear-gradient(180deg, var(--blue) 0%, var(--blue-dark) 100%);
-    color: #fff;
-    padding: 64px 0;
+  .status-strip {
+    background: var(--navy); color: #C7D2DE;
+    font-family: var(--mono); font-size: 12px; letter-spacing: .04em;
+    min-height: var(--strip-h); display: flex; align-items: center;
+    border-bottom: 2px solid var(--gold);
   }
-  .hero h1 {
-    color: #fff;
-    font-size: clamp(1.9rem, 4vw, 2.8rem);
-    margin: 0 0 12px;
+  .status-strip .container { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 22px; padding-block: 8px; }
+  .status-strip .dot {
+    width: 7px; height: 7px; border-radius: 50%; background: var(--ok);
+    display: inline-block; margin-right: 8px; box-shadow: 0 0 0 3px rgba(46,125,91,.25);
   }
-  .hero p {
-    font-size: 1.15rem;
-    max-width: 60ch;
-    color: #eaf1f8;
-  }
-  .hero-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 14px;
-    margin-top: 24px;
-  }
-
-  /* Quick-info cards */
-  .quick-info {
-    padding: 40px 0;
-  }
-  .card-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 20px;
-  }
-  .info-card {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    padding: 22px;
-  }
-  .info-card h3 {
-    margin: 0 0 6px;
-    font-size: 1rem;
-    color: var(--blue);
-    text-transform: uppercase;
-    letter-spacing: .04em;
-  }
-  .info-card .big {
-    font-size: 1.35rem;
-    font-weight: 700;
-  }
-  .info-card .sub { color: var(--text-muted); font-size: .95rem; }
+  .status-strip b { color: #fff; font-weight: 600; }
+  .status-strip .sep { color: #45566B; }
+  .status-strip .call { color: var(--gold-bright); }
 
   /* ============================================================
-     SECTION 2 — TICKET FORM
+     SECTION 1 — HERO: the desk's response commitment as a docket
      ============================================================ */
-  .form-wrap {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow-lg);
-    padding: 28px;
-    max-width: 760px;
+  .hero { background: linear-gradient(180deg, #fff 0%, var(--paper) 100%); }
+  .hero-grid {
+    display: grid; grid-template-columns: 1.15fr .85fr; gap: 48px; align-items: start;
+    padding: 64px 0 72px;
   }
-  .field { margin-bottom: 20px; }
-  .field > label,
-  .field-group > legend {
-    display: block;
-    font-weight: 600;
-    margin-bottom: 6px;
-  }
-  .req { color: var(--error); }
-  .hint { color: var(--text-muted); font-size: .9rem; margin: 4px 0 0; }
+  .hero h1 { font-size: clamp(2rem, 4.6vw, 3.05rem); margin: 14px 0 0; }
+  .hero .lede { color: var(--ink-soft); font-size: 1.12rem; margin-top: 16px; max-width: 46ch; }
 
-  input[type="text"],
-  input[type="email"],
-  input[type="search"],
-  input[type="file"],
-  select,
-  textarea {
-    width: 100%;
-    font: inherit;
-    color: var(--text);
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 10px 12px;
+  /* the docket: mono status readout, leader dashes, tabular figures */
+  .docket { margin-top: 28px; border-top: 1px solid var(--line); }
+  .docket dl { margin: 0; }
+  .docket .row {
+    display: grid; grid-template-columns: 190px 1fr; gap: 10px 18px;
+    align-items: baseline; padding: 13px 0; border-bottom: 1px solid var(--line);
   }
-  textarea { min-height: 130px; resize: vertical; }
-  input:hover, select:hover, textarea:hover { border-color: #9aa6b4; }
+  .docket dt {
+    font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .docket dd { margin: 0; font-family: var(--mono); font-variant-numeric: tabular-nums; color: var(--navy); font-size: 15px; }
+  .docket dd .big { font-size: 26px; font-weight: 700; letter-spacing: -0.01em; color: var(--navy); }
+  .docket dd .unit { color: var(--gold-text); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; margin-left: 8px; }
+  .docket .open { color: var(--ok); font-weight: 700; }
 
-  [aria-invalid="true"] {
-    border-color: var(--error) !important;
-    box-shadow: 0 0 0 1px var(--error);
-  }
-  .error {
-    display: none;
-    color: var(--error);
-    font-size: .9rem;
-    font-weight: 600;
-    margin-top: 6px;
-  }
-  .error.show { display: block; }
+  .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
 
-  .field-group {
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 14px 16px;
-    margin-bottom: 20px;
+  /* Priority / SLA reference card — does real work: shows how fast each tier moves */
+  .sla-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow-md); overflow: hidden;
   }
-  .radio-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 18px;
-    margin-top: 4px;
+  .sla-card .head {
+    background: var(--navy-2); color: #fff; padding: 16px 20px;
+    display: flex; align-items: center; gap: 10px;
   }
-  .radio-row label {
-    font-weight: 400;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
+  .sla-card .head h2 { color: #fff; font-size: 1rem; letter-spacing: 0; }
+  .sla-card .head .k { font-family: var(--mono); font-size: 11px; letter-spacing: .14em; color: #9DB1C6; text-transform: uppercase; }
+  .sla-row {
+    display: grid; grid-template-columns: auto 1fr auto; gap: 4px 12px; align-items: center;
+    padding: 14px 20px; border-bottom: 1px solid var(--line);
   }
-  .note {
-    background: var(--warning-bg);
-    color: var(--warning);
-    border: 1px solid #f0d199;
-    border-radius: var(--radius);
-    padding: 8px 12px;
-    font-size: .9rem;
-    margin-top: 12px;
+  .sla-row:last-child { border-bottom: 0; }
+  .ptag {
+    font-family: var(--mono); font-size: 12px; font-weight: 700; letter-spacing: .04em;
+    padding: 3px 8px; border-radius: 5px; border: 1px solid; white-space: nowrap;
   }
-
-  .counter { color: var(--text-muted); font-size: .85rem; float: right; font-weight: 400; }
-
-  .checkbox-field {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-  }
-  .checkbox-field input { margin-top: 5px; }
-  .checkbox-field label { font-weight: 400; }
-
-  .filename {
-    display: inline-block;
-    margin-top: 8px;
-    font-size: .9rem;
-    color: var(--text-muted);
-  }
-
-  .credential-warning {
-    display: none;
-    background: var(--warning-bg);
-    color: var(--warning);
-    border: 1px solid #f0d199;
-    border-left: 4px solid var(--accent-dark);
-    border-radius: var(--radius);
-    padding: 10px 14px;
-    margin-top: 8px;
-    font-size: .92rem;
-    font-weight: 600;
-  }
-  .credential-warning.show { display: block; }
-
-  .success-panel {
-    background: var(--success-bg);
-    border: 1px solid #b7e0c4;
-    border-left: 5px solid var(--success);
-    border-radius: var(--radius);
-    padding: 24px;
-    max-width: 760px;
-  }
-  .success-panel h3 {
-    color: var(--success);
-    margin: 0 0 12px;
-  }
-  .success-panel dl {
-    display: grid;
-    grid-template-columns: max-content 1fr;
-    gap: 6px 16px;
-    margin: 0 0 18px;
-  }
-  .success-panel dt { font-weight: 700; }
-  .success-panel dd { margin: 0; }
-  .ticket-ref {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    font-size: 1.05rem;
-    font-weight: 700;
-    letter-spacing: .5px;
+  .ptag.p1 { background: var(--p-crit-bg); color: var(--p-crit-ink); border-color: var(--p-crit-line); }
+  .ptag.p2 { background: var(--p-high-bg); color: var(--p-high-ink); border-color: var(--p-high-line); }
+  .ptag.p3 { background: var(--p-med-bg);  color: var(--p-med-ink);  border-color: var(--p-med-line); }
+  .ptag.p4 { background: var(--p-low-bg);  color: var(--p-low-ink);  border-color: var(--p-low-line); }
+  .sla-row .label { font-weight: 600; color: var(--navy); }
+  .sla-row .budget { font-family: var(--mono); font-variant-numeric: tabular-nums; color: var(--ink); font-size: 14px; text-align: right; }
+  .sla-row .sub { grid-column: 2 / -1; color: var(--ink-soft); font-size: 13px; }
+  .sla-card .foot {
+    padding: 12px 20px; background: var(--warn-bg); color: var(--warn-ink);
+    font-size: 12.5px; font-family: var(--mono); letter-spacing: .02em; display: flex; gap: 8px; align-items: flex-start;
   }
 
   /* ============================================================
-     SECTION 3 — FAQ
+     SECTION 2 — INCIDENT INTAKE (ticket form)
      ============================================================ */
-  .faq-search-wrap { max-width: 480px; margin-bottom: 20px; }
-  .faq-list {
-    max-width: 820px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-    background: var(--bg);
+  .intake-grid { display: grid; grid-template-columns: 240px 1fr; gap: 40px; align-items: start; }
+  .rail { position: sticky; top: calc(var(--nav-h) + var(--strip-h) + 24px); }
+  .rail ol { list-style: none; margin: 0; padding: 0; counter-reset: step; }
+  .rail li {
+    font-family: var(--mono); font-size: 13px; color: var(--ink-soft);
+    padding: 10px 0 10px 30px; position: relative; border-left: 2px solid var(--line); margin-left: 6px;
   }
-  .faq-item { border-top: 1px solid var(--border); }
-  .faq-item:first-child { border-top: 0; }
-  .faq-item[hidden] { display: none; }
+  .rail li::before {
+    counter-increment: step; content: counter(step, decimal-leading-zero);
+    position: absolute; left: -13px; top: 8px; width: 24px; height: 24px;
+    background: var(--paper); border: 2px solid var(--line-strong); border-radius: 50%;
+    display: grid; place-items: center; font-size: 11px; color: var(--ink-soft);
+  }
+  .rail li.done::before { border-color: var(--ok); color: var(--ok); content: "\2713"; }
+  .rail li.current { color: var(--navy); font-weight: 600; }
+  .rail li.current::before { border-color: var(--gold); color: var(--gold-text); }
 
-  .faq-q {
-    width: 100%;
-    text-align: left;
-    background: var(--bg);
-    border: 0;
-    font: inherit;
-    font-weight: 600;
-    color: var(--text);
-    padding: 16px 48px 16px 18px;
-    cursor: pointer;
-    position: relative;
+  .form-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow-md); padding: 30px;
   }
-  .faq-q:hover { background: var(--surface); }
-  .faq-q::after {
-    content: "";
-    position: absolute;
-    right: 20px;
-    top: 50%;
-    width: 10px; height: 10px;
-    border-right: 2px solid var(--blue);
-    border-bottom: 2px solid var(--blue);
-    transform: translateY(-70%) rotate(45deg);
-    transition: transform .2s ease;
+  fieldset { border: 0; margin: 0 0 8px; padding: 0; }
+  .group { padding: 22px 0; border-top: 1px solid var(--line); }
+  .group:first-of-type { border-top: 0; padding-top: 4px; }
+  .group > legend {
+    font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--ink-soft); padding: 0; margin-bottom: 14px; display: block; width: 100%; float: none;
   }
-  .faq-q[aria-expanded="true"]::after {
-    transform: translateY(-30%) rotate(225deg);
+  .group > legend .n, .group > .legend .n { color: var(--gold-text); }
+
+  .field { margin-bottom: 18px; }
+  .field:last-child { margin-bottom: 0; }
+  .field > label, .radiogroup > legend {
+    display: block; font-weight: 600; color: var(--navy); margin-bottom: 6px; font-size: .95rem;
   }
-  .faq-panel {
-    padding: 0 18px 18px;
-    color: var(--text-muted);
+  .req { color: var(--danger); font-family: var(--mono); }
+  .opt { color: var(--ink-soft); font-weight: 400; font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+  .hint { color: var(--ink-soft); font-size: .86rem; margin-top: 5px; }
+  .counter { float: right; font-family: var(--mono); font-size: 12px; color: var(--ink-soft); font-variant-numeric: tabular-nums; font-weight: 400; }
+
+  input[type="text"], input[type="email"], input[type="search"], select, textarea {
+    width: 100%; font: inherit; color: var(--ink); background: var(--surface);
+    border: 1.5px solid var(--line-strong); border-radius: var(--radius-sm); padding: 11px 12px;
+    transition: border-color .12s ease, box-shadow .12s ease;
   }
-  .faq-panel[hidden] { display: none; }
-  .faq-empty {
-    max-width: 820px;
-    padding: 18px;
-    color: var(--text-muted);
-    font-style: italic;
+  input::placeholder, textarea::placeholder { color: #9AA3AF; }
+  input:hover, select:hover, textarea:hover { border-color: var(--ink-soft); }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(0,83,155,.15); }
+  textarea { min-height: 132px; resize: vertical; }
+  input[inputmode="numeric"] { font-family: var(--mono); letter-spacing: .12em; }
+
+  [aria-invalid="true"] { border-color: var(--danger) !important; box-shadow: 0 0 0 3px rgba(192,57,43,.14) !important; }
+  .error { display: none; margin-top: 6px; color: var(--danger); font-size: .86rem; font-weight: 600; }
+  .error.show { display: flex; gap: 6px; align-items: flex-start; }
+  .error svg { flex: none; margin-top: 2px; }
+
+  /* Priority: a triage scale, each option carries its real SLA budget */
+  .triage { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 4px; }
+  .triage .tile {
+    display: flex; flex-direction: column; gap: 6px;
+    border: 1.5px solid var(--line-strong); border-radius: var(--radius-sm);
+    padding: 12px 14px; cursor: pointer; background: var(--surface);
+    transition: border-color .12s ease, background-color .12s ease, box-shadow .12s ease;
   }
-  .faq-empty[hidden] { display: none; }
+  .triage .tile:hover { border-color: var(--ink-soft); }
+  .triage .tile input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .triage .tile .top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .triage .tile .name { font-weight: 700; color: var(--navy); }
+  .triage .tile .budget { font-family: var(--mono); font-size: 12.5px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+  .triage .tile:has(input:checked) { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(183,121,31,.18); background: #FFFDF8; }
+  .triage .tile:has(input:focus-visible) { outline: 3px solid var(--gold); outline-offset: 2px; }
+  .triage-note {
+    margin-top: 10px; font-family: var(--mono); font-size: 12.5px; letter-spacing: .02em;
+    color: var(--warn-ink); background: var(--warn-bg); border: 1px solid var(--warn-line);
+    border-radius: var(--radius-sm); padding: 9px 12px; display: flex; gap: 8px; align-items: flex-start;
+  }
+
+  .checkbox-field { display: flex; align-items: flex-start; gap: 11px; }
+  .checkbox-field input { width: 20px; height: 20px; margin-top: 3px; accent-color: var(--blue); flex: none; }
+  .checkbox-field label { font-weight: 400; color: var(--ink); flex: 1; }
+
+  .filepick { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .filepick .fake {
+    font-weight: 600; color: var(--navy); border: 1.5px solid var(--line-strong);
+    border-radius: var(--radius-sm); padding: 9px 14px; cursor: pointer; background: var(--surface); min-height: 42px; display: inline-flex; align-items: center;
+  }
+  .filepick .fake:hover { border-color: var(--ink-soft); }
+  .filepick input[type="file"] { position: absolute; width: 1px; height: 1px; opacity: 0; }
+  .filepick input[type="file"]:focus-visible + .fake { outline: 3px solid var(--gold); outline-offset: 2px; }
+  .filename { font-family: var(--mono); font-size: 13px; color: var(--ink-soft); }
+
+  /* credential-safety warning (kept, non-blocking) */
+  .cred-warn {
+    display: none; margin-top: 10px; padding: 12px 14px;
+    background: var(--warn-bg); border: 1px solid var(--warn-line); border-left: 4px solid var(--gold);
+    border-radius: var(--radius-sm); font-size: .9rem; color: var(--warn-ink); font-weight: 600;
+    gap: 9px; align-items: flex-start;
+  }
+  .cred-warn.show { display: flex; }
+  .cred-warn svg { flex: none; margin-top: 1px; }
+
+  /* error summary (focusable, top of form on failed submit) */
+  .error-summary {
+    border: 1.5px solid var(--danger); border-radius: var(--radius-sm);
+    background: var(--danger-bg); padding: 16px 18px; margin-bottom: 22px;
+  }
+  .error-summary h3 { color: var(--danger); font-size: 1rem; margin-bottom: 8px; }
+  .error-summary ul { margin: 0; padding-left: 18px; }
+  .error-summary li { margin: 3px 0; }
+  .error-summary a { color: var(--danger); font-weight: 600; }
+
+  .submit-row { border-top: 1px solid var(--line); padding-top: 20px; margin-top: 4px; }
+
+  /* success docket */
+  .success {
+    border: 1px solid var(--ok); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-md);
+  }
+  .success .bar { background: var(--ok); color: #fff; padding: 14px 22px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+  .success .body { background: var(--surface); padding: 24px 22px; }
+  .success dl { display: grid; grid-template-columns: max-content 1fr; gap: 10px 20px; margin: 0 0 20px; }
+  .success dt { font-family: var(--mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-soft); align-self: center; }
+  .success dd { margin: 0; }
+  .success .ref { font-family: var(--mono); font-size: 1.25rem; font-weight: 700; letter-spacing: .04em; color: var(--navy); }
+  .success .next { border-top: 1px solid var(--line); padding-top: 16px; }
+  .success .next p { font-family: var(--mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 8px; }
+  .success .next ol { margin: 0; padding-left: 20px; color: var(--ink); }
+  .success .next li { margin: 4px 0; }
+
+  /* ============================================================
+     SECTION 3 — SELF-SERVICE RUNBOOK (FAQ)
+     ============================================================ */
+  .search-wrap { max-width: 460px; margin-bottom: 24px; position: relative; }
+  .search-wrap svg { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--ink-soft); pointer-events: none; }
+  .search-wrap input { padding-left: 40px; }
+
+  .runbook { max-width: 860px; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: var(--surface); }
+  .rb-item { border-top: 1px solid var(--line); }
+  .rb-item:first-child { border-top: 0; }
+  .rb-item[hidden] { display: none; }
+  .rb-q {
+    width: 100%; display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center;
+    text-align: left; background: var(--surface); border: 0; font: inherit; cursor: pointer;
+    padding: 16px 18px; color: var(--navy); font-weight: 600;
+  }
+  .rb-q:hover { background: #F6F7F9; }
+  .rb-q .id { font-family: var(--mono); font-size: 12px; color: var(--gold-text); letter-spacing: .06em; }
+  .rb-q .chev { transition: transform .2s ease; color: var(--ink-soft); }
+  .rb-q[aria-expanded="true"] .chev { transform: rotate(180deg); }
+  .rb-panel { padding: 0 18px 18px 52px; color: var(--ink-soft); }
+  .rb-panel[hidden] { display: none; }
+  .rb-panel p { max-width: 68ch; }
+  .rb-empty { max-width: 860px; padding: 18px; color: var(--ink-soft); font-family: var(--mono); font-size: 13px; }
+  .rb-empty[hidden] { display: none; }
 
   /* ============================================================
      FOOTER
      ============================================================ */
-  .site-footer {
-    background: var(--text);
-    color: #cfd4db;
-    padding: 44px 0 22px;
-  }
+  .site-footer { background: var(--navy); color: #AEBBC9; padding: 52px 0 26px; }
   .site-footer a { color: #fff; }
-  .footer-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 28px;
-  }
-  .site-footer h3 {
-    color: #fff;
-    font-size: 1rem;
-    margin: 0 0 10px;
-    text-transform: uppercase;
-    letter-spacing: .04em;
-  }
+  .footer-grid { display: grid; grid-template-columns: 1.2fr 1fr 1.4fr; gap: 32px; }
+  .site-footer h3 { color: #fff; font-family: var(--mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 12px; }
   .site-footer ul { list-style: none; margin: 0; padding: 0; }
-  .site-footer li { margin-bottom: 6px; }
-  .disclaimer {
-    font-size: .9rem;
-    color: #aab1ba;
+  .site-footer li { margin-bottom: 7px; }
+  .site-footer .mono { font-family: var(--mono); font-size: 13px; }
+  .sec-line {
+    display: flex; gap: 10px; align-items: flex-start; margin-top: 4px;
+    padding: 12px 14px; border: 1px solid #24384E; border-radius: var(--radius-sm);
+    background: #0E2136; color: #C7D2DE; font-size: .88rem;
   }
+  .sec-line svg { flex: none; margin-top: 1px; color: var(--gold-bright); }
   .footer-bottom {
-    border-top: 1px solid #444a53;
-    margin-top: 28px;
-    padding-top: 16px;
-    font-size: .88rem;
-    color: #9aa1aa;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px 20px;
-    justify-content: space-between;
+    border-top: 1px solid #24384E; margin-top: 30px; padding-top: 18px;
+    font-size: .84rem; color: #8595A6; display: flex; flex-wrap: wrap; gap: 6px 20px; justify-content: space-between;
   }
+  .footer-bottom .disc { color: #A9B7C6; }
+
+  /* ---- load reveal (subtle; disabled for reduced motion) ---- */
+  .reveal { opacity: 0; transform: translateY(10px); animation: rise .5s ease forwards; }
+  .reveal.d1 { animation-delay: .05s; } .reveal.d2 { animation-delay: .12s; }
+  .reveal.d3 { animation-delay: .19s; } .reveal.d4 { animation-delay: .26s; }
+  @keyframes rise { to { opacity: 1; transform: none; } }
 
   /* ============================================================
      RESPONSIVE — single column below 768px
      ============================================================ */
+  @media (max-width: 900px) {
+    .hero-grid { grid-template-columns: 1fr; gap: 36px; }
+    .intake-grid { grid-template-columns: 1fr; gap: 24px; }
+    .rail { position: static; }
+    .rail ol { display: flex; flex-wrap: wrap; gap: 4px 18px; }
+    .rail li { border-left: 0; padding: 6px 0 6px 26px; margin-left: 0; }
+  }
   @media (max-width: 768px) {
+    .section { padding: 52px 0; }
     .nav-toggle { display: inline-flex; }
     .nav-list {
-      display: none;
-      position: absolute;
-      left: 0; right: 0;
-      top: 64px;
-      flex-direction: column;
-      gap: 0;
-      background: var(--blue-dark);
-      padding: 8px;
+      display: none; position: absolute; left: 0; right: 0; top: var(--nav-h);
+      flex-direction: column; gap: 2px; background: var(--surface);
+      border-bottom: 1px solid var(--line); padding: 8px; box-shadow: var(--shadow-sm);
     }
     .nav-list.open { display: flex; }
     .nav-list a { padding: 12px 14px; }
-
     .hero-actions { flex-direction: column; align-items: stretch; }
-    .hero-actions .btn { text-align: center; }
-
-    .success-panel dl { grid-template-columns: 1fr; gap: 2px; }
-    .success-panel dt { margin-top: 8px; }
+    .docket .row { grid-template-columns: 1fr; gap: 2px; padding: 11px 0; }
+    .triage { grid-template-columns: 1fr; }
+    .form-card { padding: 20px; }
+    .success dl { grid-template-columns: 1fr; gap: 2px; }
+    .success dt { margin-top: 8px; }
+    .footer-grid { grid-template-columns: 1fr; gap: 24px; }
   }
 
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
-    * { transition: none !important; }
+    *, *::before, *::after { transition: none !important; animation: none !important; }
+    .reveal { opacity: 1; transform: none; }
   }
 </style>
 </head>
@@ -514,419 +489,515 @@
 <a class="skip-link" href="#main">Skip to main content</a>
 
 <!-- ============================================================
-     SECTION 1 — HEADER (sticky nav + hero + quick-info cards)
+     HEADER — sticky nav + desk-status strip
      ============================================================ -->
 <header class="site-header">
   <nav class="nav container" aria-label="Primary">
-    <a class="brand" href="#home">UOB &middot; IT Service Desk</a>
+    <a class="brand" href="#home">
+      <span class="mark" aria-hidden="true">IT</span>
+      UOB &middot; IT Service Desk
+    </a>
 
     <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="navList">
-      <span class="bars" aria-hidden="true"></span>
-      <span>Menu</span>
+      <span class="bars" aria-hidden="true"></span> Menu
     </button>
 
     <ul class="nav-list" id="navList">
       <li><a href="#home">Home</a></li>
-      <li><a href="#ticket">Submit a Ticket</a></li>
-      <li><a href="#faq">FAQ</a></li>
+      <li><a href="#ticket">Log a ticket</a></li>
+      <li><a href="#faq">Runbook</a></li>
       <li><a href="#contact">Contact</a></li>
     </ul>
   </nav>
+
+  <!-- Signature element: a persistent operations status line -->
+  <div class="status-strip" role="status" aria-label="Service desk status">
+    <div class="container">
+      <span><span class="dot" aria-hidden="true"></span><b>DESK OPEN</b></span>
+      <span class="sep">/</span>
+      <span>MON&ndash;FRI <b>08:00&ndash;20:00</b> SGT</span>
+      <span class="sep">/</span>
+      <span>AVG 1ST RESPONSE <b id="stripAvg">03:12</b></span>
+      <span class="sep">/</span>
+      <span>P1 INCIDENT &rarr; <span class="call">CALL 1800-XXX-XXXX</span></span>
+    </div>
+  </div>
 </header>
 
 <main id="main">
 
-  <!-- Hero banner -->
-  <section class="hero" id="home" aria-labelledby="hero-heading">
-    <div class="container">
-      <h1 id="hero-heading">IT Support, When You Need It</h1>
-      <p>Log a request with the internal Service Desk and our team will get you back
-         to work quickly &mdash; hardware, software, network, access and more.</p>
-      <div class="hero-actions">
-        <a class="btn btn-accent" href="#ticket">Submit a Ticket</a>
-        <a class="btn btn-outline-light" href="#faq">Browse FAQs</a>
+  <!-- ============================================================
+       SECTION 1 — HERO: response commitment as a docket + SLA card
+       ============================================================ -->
+  <section class="hero" id="home" aria-labelledby="hero-h">
+    <div class="container hero-grid">
+      <div>
+        <p class="kicker reveal"><span class="seq">01</span> &nbsp;/&nbsp; Service desk &middot; status</p>
+        <h1 id="hero-h" class="reveal d1">Log an incident. We respond on the clock.</h1>
+        <p class="lede reveal d2">One place for UOB staff to raise hardware, software, network, email and
+          access problems. Pick a priority, describe what broke, and you&rsquo;ll get a reference and a
+          response time straight away.</p>
+
+        <div class="docket reveal d3">
+          <dl>
+            <div class="row">
+              <dt>Desk</dt>
+              <dd><span class="big open">OPEN</span><span class="unit">accepting tickets</span></dd>
+            </div>
+            <div class="row">
+              <dt>Hours</dt>
+              <dd><span class="big">08:00&ndash;20:00</span><span class="unit">Mon&ndash;Fri &middot; SGT</span></dd>
+            </div>
+            <div class="row">
+              <dt>Avg 1st response</dt>
+              <dd><span class="big" id="docketAvg">03:12</span><span class="unit">hh:mm today</span></dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="hero-actions reveal d4">
+          <a class="btn btn-primary is-lead" href="#ticket">Log an incident</a>
+          <a class="btn btn-ghost" href="#faq">Search the runbook</a>
+        </div>
+      </div>
+
+      <!-- Priority / SLA reference: shows how fast each tier moves -->
+      <div class="sla-card reveal d2" aria-labelledby="sla-h">
+        <div class="head">
+          <span class="k">Response SLA</span>
+          <h2 id="sla-h">Priority &rarr; first response</h2>
+        </div>
+        <div class="sla-row">
+          <span class="ptag p1" aria-hidden="true">P1</span>
+          <span class="label">Critical</span>
+          <span class="budget">1 hour</span>
+          <span class="sub">Major outage or security incident. Also phone the hotline.</span>
+        </div>
+        <div class="sla-row">
+          <span class="ptag p2" aria-hidden="true">P2</span>
+          <span class="label">High</span>
+          <span class="budget">4 hours</span>
+          <span class="sub">You&rsquo;re blocked and there&rsquo;s no workaround.</span>
+        </div>
+        <div class="sla-row">
+          <span class="ptag p3" aria-hidden="true">P3</span>
+          <span class="label">Medium</span>
+          <span class="budget">1 business day</span>
+          <span class="sub">Disruptive, but you can keep working.</span>
+        </div>
+        <div class="sla-row">
+          <span class="ptag p4" aria-hidden="true">P4</span>
+          <span class="label">Low</span>
+          <span class="budget">3 business days</span>
+          <span class="sub">Minor issue, request or question.</span>
+        </div>
+        <p class="foot">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1.5 1.5 13h13L8 1.5Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M8 6.5v3.2M8 11.4h.01" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          Times are first-response targets during desk hours, not resolution times.
+        </p>
       </div>
     </div>
   </section>
 
-  <!-- Quick-info cards -->
-  <section class="quick-info" aria-label="Service desk information">
+  <!-- ============================================================
+       SECTION 2 — INCIDENT INTAKE (ticket form)
+       ============================================================ -->
+  <section class="section" id="ticket" aria-labelledby="ticket-h">
     <div class="container">
-      <div class="card-grid">
-        <div class="info-card">
-          <h3>Service Desk Hotline</h3>
-          <p class="big">1800-XXX-XXXX</p>
-          <p class="sub">For urgent and Critical issues</p>
-        </div>
-        <div class="info-card">
-          <h3>Operating Hours</h3>
-          <p class="big">Mon&ndash;Fri, 8am&ndash;8pm</p>
-          <p class="sub">Singapore Time (SGT)</p>
-        </div>
-        <div class="info-card">
-          <h3>Average Response Time</h3>
-          <p class="big">&lt; 4 hours</p>
-          <p class="sub">During operating hours</p>
+      <div class="section-head">
+        <p class="kicker"><span class="seq">02</span> &nbsp;/&nbsp; Incident intake</p>
+        <h2 id="ticket-h">Log a support ticket</h2>
+        <p>Fields marked <span class="req">*</span> are required. Never enter passwords, one-time
+          passcodes, PINs or card numbers &mdash; the service desk will never ask for them.</p>
+      </div>
+
+      <div class="intake-grid">
+        <aside class="rail" aria-hidden="true">
+          <ol id="railSteps">
+            <li data-step="who" class="current">Who&rsquo;s reporting</li>
+            <li data-step="what">What&rsquo;s wrong</li>
+            <li data-step="confirm">Confirm &amp; submit</li>
+          </ol>
+        </aside>
+
+        <div>
+          <form class="form-card" id="ticketForm" novalidate>
+
+            <!-- focusable error summary, revealed on failed submit -->
+            <div class="error-summary" id="errorSummary" tabindex="-1" hidden>
+              <h3 id="errorSummaryTitle">Check these fields</h3>
+              <ul id="errorSummaryList"></ul>
+            </div>
+
+            <!-- GROUP: who's reporting -->
+            <fieldset class="group" data-step="who">
+              <legend><span class="n">A</span> &nbsp; Who&rsquo;s reporting</legend>
+
+              <div class="field">
+                <label for="fullName">Full name <span class="req">*</span></label>
+                <input type="text" id="fullName" name="fullName" autocomplete="name" aria-describedby="err-fullName">
+                <span class="error" id="err-fullName" role="alert"></span>
+              </div>
+
+              <div class="field">
+                <label for="staffId">Staff ID <span class="req">*</span></label>
+                <input type="text" id="staffId" name="staffId" inputmode="numeric" maxlength="6"
+                       autocomplete="off" placeholder="123456" aria-describedby="hint-staffId err-staffId">
+                <p class="hint" id="hint-staffId">Six digits, from the back of your staff pass.</p>
+                <span class="error" id="err-staffId" role="alert"></span>
+              </div>
+
+              <div class="field">
+                <label for="email">Corporate email <span class="req">*</span></label>
+                <input type="email" id="email" name="email" autocomplete="email"
+                       placeholder="name@uobgroup.com" aria-describedby="hint-email err-email">
+                <p class="hint" id="hint-email">Must end in <code>@uobgroup.com</code>.</p>
+                <span class="error" id="err-email" role="alert"></span>
+              </div>
+
+              <div class="field">
+                <label for="department">Department <span class="req">*</span></label>
+                <select id="department" name="department" aria-describedby="err-department">
+                  <option value="">Select a department&hellip;</option>
+                  <option>Retail Banking</option>
+                  <option>Corporate Banking</option>
+                  <option>Treasury</option>
+                  <option>Risk &amp; Compliance</option>
+                  <option>Operations</option>
+                  <option>Human Resources</option>
+                  <option>Technology</option>
+                </select>
+                <span class="error" id="err-department" role="alert"></span>
+              </div>
+            </fieldset>
+
+            <!-- GROUP: what's wrong -->
+            <fieldset class="group" data-step="what">
+              <legend><span class="n">B</span> &nbsp; What&rsquo;s wrong</legend>
+
+              <div class="field">
+                <label for="category">Issue category <span class="req">*</span></label>
+                <select id="category" name="category" aria-describedby="err-category">
+                  <option value="">Select a category&hellip;</option>
+                  <option>Hardware</option>
+                  <option>Software / Application</option>
+                  <option>Network &amp; VPN</option>
+                  <option>Email &amp; Collaboration</option>
+                  <option>Account &amp; Access</option>
+                  <option>Security Incident</option>
+                  <option>Other</option>
+                </select>
+                <span class="error" id="err-category" role="alert"></span>
+              </div>
+
+              <fieldset class="field radiogroup" aria-describedby="err-priority">
+                <legend>Priority <span class="req">*</span></legend>
+                <div class="triage" id="triage">
+                  <label class="tile">
+                    <span class="top"><span class="name">Low</span><span class="ptag p4">P4</span></span>
+                    <span class="budget">Responds in 3 business days</span>
+                    <input type="radio" name="priority" value="Low">
+                  </label>
+                  <label class="tile">
+                    <span class="top"><span class="name">Medium</span><span class="ptag p3">P3</span></span>
+                    <span class="budget">Responds in 1 business day</span>
+                    <input type="radio" name="priority" value="Medium">
+                  </label>
+                  <label class="tile">
+                    <span class="top"><span class="name">High</span><span class="ptag p2">P2</span></span>
+                    <span class="budget">Responds in 4 hours</span>
+                    <input type="radio" name="priority" value="High">
+                  </label>
+                  <label class="tile">
+                    <span class="top"><span class="name">Critical</span><span class="ptag p1">P1</span></span>
+                    <span class="budget">Responds in 1 hour</span>
+                    <input type="radio" name="priority" value="Critical">
+                  </label>
+                </div>
+                <p class="triage-note">
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1.5 1.5 13h13L8 1.5Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M8 6.5v3.2M8 11.4h.01" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                  Critical incidents must also be phoned in to the hotline on 1800-XXX-XXXX.
+                </p>
+                <span class="error" id="err-priority" role="alert"></span>
+              </fieldset>
+
+              <div class="field">
+                <label for="subject">Subject <span class="req">*</span>
+                  <span class="counter"><span id="subjectCount">0</span>/100</span>
+                </label>
+                <input type="text" id="subject" name="subject" maxlength="100"
+                       placeholder="Short summary, e.g. &quot;VPN drops every few minutes&quot;" aria-describedby="err-subject">
+                <span class="error" id="err-subject" role="alert"></span>
+              </div>
+
+              <div class="field">
+                <label for="description">Description <span class="req">*</span>
+                  <span class="counter"><span id="descCount">0</span> chars</span>
+                </label>
+                <textarea id="description" name="description" aria-describedby="hint-desc err-description"
+                          placeholder="What you were doing, what happened, any error text, and when it started."></textarea>
+                <p class="hint" id="hint-desc">At least 20 characters. Include exact error messages if you have them.</p>
+                <div class="cred-warn" id="credWarning" role="alert">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" stroke="currentColor" stroke-width="1.4"/></svg>
+                  <span>That looks like a credential. Never share passwords, OTPs, PINs or card
+                    numbers &mdash; IT will never ask for them. Remove it before submitting.</span>
+                </div>
+                <span class="error" id="err-description" role="alert"></span>
+              </div>
+
+              <div class="field">
+                <label for="attachment">Attachment <span class="opt">optional</span></label>
+                <div class="filepick">
+                  <input type="file" id="attachment" name="attachment" accept=".png,.jpg,.pdf,.docx">
+                  <label class="fake" for="attachment">Choose file</label>
+                  <span class="filename" id="fileName">No file chosen</span>
+                </div>
+                <p class="hint">Accepted: .png, .jpg, .pdf, .docx. A screenshot of the error helps.</p>
+              </div>
+            </fieldset>
+
+            <!-- GROUP: confirm -->
+            <fieldset class="group" data-step="confirm">
+              <legend><span class="n">C</span> &nbsp; Confirm &amp; submit</legend>
+              <div class="field checkbox-field">
+                <input type="checkbox" id="confirm" name="confirm" aria-describedby="err-confirm">
+                <label for="confirm">The information above is accurate and contains no passwords,
+                  passcodes or card details. <span class="req">*</span></label>
+              </div>
+              <span class="error" id="err-confirm" role="alert"></span>
+            </fieldset>
+
+            <div class="submit-row">
+              <button type="submit" class="btn btn-primary is-lead" id="submitBtn">Submit ticket</button>
+            </div>
+          </form>
+
+          <!-- success docket (hidden until a clean submit) -->
+          <div class="success" id="successPanel" role="status" tabindex="-1" hidden>
+            <div class="bar">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M3.5 9.5 7 13l7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Ticket logged
+            </div>
+            <div class="body">
+              <dl>
+                <dt>Reference</dt><dd class="ref" id="outRef"></dd>
+                <dt>Priority</dt><dd id="outPriority"></dd>
+                <dt>First response</dt><dd id="outSla"></dd>
+              </dl>
+              <div class="next">
+                <p>What happens next</p>
+                <ol>
+                  <li>A confirmation is on its way to your corporate inbox.</li>
+                  <li>A service desk agent picks it up within the response window above.</li>
+                  <li>Track or update it any time with the reference number.</li>
+                </ol>
+              </div>
+              <div class="submit-row" style="margin-top:18px;">
+                <button type="button" class="btn btn-ghost" id="anotherBtn">Log another ticket</button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
   <!-- ============================================================
-       SECTION 2 — IT SUPPORT TICKET FORM
+       SECTION 3 — SELF-SERVICE RUNBOOK (FAQ)
        ============================================================ -->
-  <section id="ticket" aria-labelledby="ticket-heading">
+  <section class="section" id="faq" aria-labelledby="faq-h">
     <div class="container">
-      <h2 id="ticket-heading">Submit an IT Support Ticket</h2>
-      <p>Fields marked with <span class="req">*</span> are required. Please do
-         <strong>not</strong> include passwords, one-time passcodes, PINs or card
-         numbers anywhere in this form.</p>
-
-      <form class="form-wrap" id="ticketForm" novalidate>
-
-        <!-- Full Name -->
-        <div class="field">
-          <label for="fullName">Full Name <span class="req">*</span></label>
-          <input type="text" id="fullName" name="fullName" autocomplete="name"
-                 aria-describedby="err-fullName">
-          <span class="error" id="err-fullName" role="alert"></span>
-        </div>
-
-        <!-- Staff ID -->
-        <div class="field">
-          <label for="staffId">Staff ID <span class="req">*</span></label>
-          <input type="text" id="staffId" name="staffId" inputmode="numeric"
-                 maxlength="6" aria-describedby="hint-staffId err-staffId">
-          <p class="hint" id="hint-staffId">6 digits, e.g. 123456</p>
-          <span class="error" id="err-staffId" role="alert"></span>
-        </div>
-
-        <!-- Corporate Email -->
-        <div class="field">
-          <label for="email">Corporate Email <span class="req">*</span></label>
-          <input type="email" id="email" name="email" autocomplete="email"
-                 aria-describedby="hint-email err-email">
-          <p class="hint" id="hint-email">Must end in @uobgroup.com</p>
-          <span class="error" id="err-email" role="alert"></span>
-        </div>
-
-        <!-- Department -->
-        <div class="field">
-          <label for="department">Department <span class="req">*</span></label>
-          <select id="department" name="department" aria-describedby="err-department">
-            <option value="">&mdash; Select a department &mdash;</option>
-            <option>Retail Banking</option>
-            <option>Corporate Banking</option>
-            <option>Treasury</option>
-            <option>Risk &amp; Compliance</option>
-            <option>Operations</option>
-            <option>Human Resources</option>
-            <option>Technology</option>
-          </select>
-          <span class="error" id="err-department" role="alert"></span>
-        </div>
-
-        <!-- Issue Category -->
-        <div class="field">
-          <label for="category">Issue Category <span class="req">*</span></label>
-          <select id="category" name="category" aria-describedby="err-category">
-            <option value="">&mdash; Select a category &mdash;</option>
-            <option>Hardware</option>
-            <option>Software / Application</option>
-            <option>Network &amp; VPN</option>
-            <option>Email &amp; Collaboration</option>
-            <option>Account &amp; Access</option>
-            <option>Security Incident</option>
-            <option>Other</option>
-          </select>
-          <span class="error" id="err-category" role="alert"></span>
-        </div>
-
-        <!-- Priority -->
-        <fieldset class="field-group" aria-describedby="err-priority">
-          <legend>Priority <span class="req">*</span></legend>
-          <div class="radio-row">
-            <label><input type="radio" name="priority" value="Low"> Low</label>
-            <label><input type="radio" name="priority" value="Medium"> Medium</label>
-            <label><input type="radio" name="priority" value="High"> High</label>
-            <label><input type="radio" name="priority" value="Critical"> Critical</label>
-          </div>
-          <p class="note">Critical issues should also be phoned in to the Service
-             Desk hotline on 1800-XXX-XXXX.</p>
-          <span class="error" id="err-priority" role="alert"></span>
-        </fieldset>
-
-        <!-- Subject -->
-        <div class="field">
-          <label for="subject">
-            Subject <span class="req">*</span>
-            <span class="counter"><span id="subjectCount">0</span>/100</span>
-          </label>
-          <input type="text" id="subject" name="subject" maxlength="100"
-                 aria-describedby="err-subject">
-          <span class="error" id="err-subject" role="alert"></span>
-        </div>
-
-        <!-- Description -->
-        <div class="field">
-          <label for="description">
-            Description <span class="req">*</span>
-            <span class="counter"><span id="descCount">0</span> characters</span>
-          </label>
-          <textarea id="description" name="description"
-                    aria-describedby="hint-desc err-description"></textarea>
-          <p class="hint" id="hint-desc">Minimum 20 characters. Describe what you
-             were doing, what happened, and any error messages.</p>
-          <div class="credential-warning" id="credWarning" role="alert">
-            It looks like you may be about to share a credential. Never include
-            passwords, OTPs, PINs or card details &mdash; IT staff will never ask
-            for them.
-          </div>
-          <span class="error" id="err-description" role="alert"></span>
-        </div>
-
-        <!-- Attachment -->
-        <div class="field">
-          <label for="attachment">Attachment</label>
-          <input type="file" id="attachment" name="attachment"
-                 accept=".png,.jpg,.pdf,.docx" aria-describedby="hint-attach">
-          <p class="hint" id="hint-attach">Optional. Accepted: .png, .jpg, .pdf, .docx</p>
-          <span class="filename" id="fileName"></span>
-        </div>
-
-        <!-- Confirmation checkbox -->
-        <div class="field checkbox-field">
-          <input type="checkbox" id="confirm" name="confirm"
-                 aria-describedby="err-confirm">
-          <label for="confirm">I confirm the information provided is accurate
-             <span class="req">*</span></label>
-        </div>
-        <span class="error" id="err-confirm" role="alert"></span>
-
-        <div class="field" style="margin-top:8px;">
-          <button type="submit" class="btn btn-primary">Submit Ticket</button>
-        </div>
-      </form>
-
-      <!-- Success panel (hidden until a valid submit) -->
-      <div class="success-panel" id="successPanel" role="status" hidden>
-        <h3>Ticket submitted successfully</h3>
-        <p>Thank you. Your request has been logged with the Service Desk. Please
-           keep your reference number for tracking.</p>
-        <dl>
-          <dt>Ticket reference</dt>
-          <dd class="ticket-ref" id="outRef"></dd>
-          <dt>Priority</dt>
-          <dd id="outPriority"></dd>
-          <dt>Expected SLA response</dt>
-          <dd id="outSla"></dd>
-        </dl>
-        <button type="button" class="btn btn-outline" id="anotherBtn">Submit another ticket</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============================================================
-       SECTION 3 — FAQ (search filter + one-at-a-time accordion)
-       ============================================================ -->
-  <section id="faq" aria-labelledby="faq-heading">
-    <div class="container">
-      <h2 id="faq-heading">Frequently Asked Questions</h2>
-
-      <div class="faq-search-wrap">
-        <label for="faqSearch">Search FAQs</label>
-        <input type="search" id="faqSearch" placeholder="Try &quot;VPN&quot; or &quot;password&quot;"
-               aria-controls="faqList">
+      <div class="section-head">
+        <p class="kicker"><span class="seq">03</span> &nbsp;/&nbsp; Self-service runbook</p>
+        <h2 id="faq-h">Fix it faster</h2>
+        <p>Common issues the desk resolves every day. Search, or open an entry to see the steps.</p>
       </div>
 
-      <div class="faq-list" id="faqList">
-        <div class="faq-item">
-          <h3 style="margin:0;">
-            <button class="faq-q" aria-expanded="false" aria-controls="faq-panel-1" id="faq-q-1">
-              How do I reset my network password?
-            </button>
-          </h3>
-          <div class="faq-panel" id="faq-panel-1" role="region" aria-labelledby="faq-q-1" hidden>
-            <p>Go to the Self-Service Password Portal from any corporate device and
-               choose &ldquo;Reset network password&rdquo;. You will be asked to
-               verify your identity with your registered multi-factor authentication
-               method. If you are locked out completely or off the network, call the
-               Service Desk hotline and an agent will verify you and issue a
-               temporary password that you must change at next logon.</p>
+      <div class="search-wrap">
+        <label for="faqSearch" class="visually-hidden">Search the runbook</label>
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="5.25" stroke="currentColor" stroke-width="1.6"/><path d="m12.5 12.5 3 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <input type="search" id="faqSearch" placeholder="Search &mdash; e.g. VPN, password, shared drive" aria-controls="faqList">
+      </div>
+
+      <div class="runbook" id="faqList">
+        <div class="rb-item">
+          <button class="rb-q" aria-expanded="false" aria-controls="rb-1" id="rbq-1">
+            <span class="id">RB-01</span>
+            <span>How do I reset my network password?</span>
+            <svg class="chev" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m4 6 4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="rb-panel" id="rb-1" role="region" aria-labelledby="rbq-1" hidden>
+            <p>Open the Self-Service Password Portal from any corporate device and choose
+              &ldquo;Reset network password&rdquo;. You&rsquo;ll verify your identity with your
+              registered multi-factor method. If you&rsquo;re fully locked out or off the network,
+              call the hotline &mdash; an agent will verify you and issue a temporary password that
+              you must change at next sign-in.</p>
           </div>
         </div>
 
-        <div class="faq-item">
-          <h3 style="margin:0;">
-            <button class="faq-q" aria-expanded="false" aria-controls="faq-panel-2" id="faq-q-2">
-              How long will my ticket take to be resolved?
-            </button>
-          </h3>
-          <div class="faq-panel" id="faq-panel-2" role="region" aria-labelledby="faq-q-2" hidden>
-            <p>First response targets are based on the priority you select: Critical
-               within 1 hour, High within 4 hours, Medium within 1 business day and
-               Low within 3 business days. Resolution time depends on the complexity
-               of the issue and whether parts, approvals or third parties are
-               involved. You will receive email updates as the ticket progresses,
-               and you can reply to any update to add information.</p>
+        <div class="rb-item">
+          <button class="rb-q" aria-expanded="false" aria-controls="rb-2" id="rbq-2">
+            <span class="id">RB-02</span>
+            <span>How long will my ticket take to be resolved?</span>
+            <svg class="chev" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m4 6 4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="rb-panel" id="rb-2" role="region" aria-labelledby="rbq-2" hidden>
+            <p>First-response targets follow the priority you pick: Critical within 1 hour, High
+              within 4 hours, Medium within 1 business day, Low within 3 business days. Resolution
+              time depends on the issue &mdash; whether parts, approvals or a third party are
+              involved. You&rsquo;ll get email updates as it progresses, and you can reply to any
+              update to add detail.</p>
           </div>
         </div>
 
-        <div class="faq-item">
-          <h3 style="margin:0;">
-            <button class="faq-q" aria-expanded="false" aria-controls="faq-panel-3" id="faq-q-3">
-              How do I connect to the corporate VPN from home?
-            </button>
-          </h3>
-          <div class="faq-panel" id="faq-panel-3" role="region" aria-labelledby="faq-q-3" hidden>
-            <p>Open the corporate VPN client from your Start menu or Applications
-               folder and sign in with your network username and password. Approve
-               the multi-factor authentication prompt on your registered device to
-               complete the connection. If the client is missing or fails to
-               install, raise a ticket under &ldquo;Network &amp; VPN&rdquo; and
-               include your device name.</p>
+        <div class="rb-item">
+          <button class="rb-q" aria-expanded="false" aria-controls="rb-3" id="rbq-3">
+            <span class="id">RB-03</span>
+            <span>How do I connect to the corporate VPN from home?</span>
+            <svg class="chev" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m4 6 4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="rb-panel" id="rb-3" role="region" aria-labelledby="rbq-3" hidden>
+            <p>Open the corporate VPN client from your Start menu or Applications folder and sign in
+              with your network username and password. Approve the multi-factor prompt on your
+              registered device to finish connecting. If the client is missing or won&rsquo;t
+              install, raise a ticket under &ldquo;Network &amp; VPN&rdquo; and include your device
+              name.</p>
           </div>
         </div>
 
-        <div class="faq-item">
-          <h3 style="margin:0;">
-            <button class="faq-q" aria-expanded="false" aria-controls="faq-panel-4" id="faq-q-4">
-              My laptop won't boot &mdash; what should I do?
-            </button>
-          </h3>
-          <div class="faq-panel" id="faq-panel-4" role="region" aria-labelledby="faq-q-4" hidden>
-            <p>Hold the power button for 15 seconds to force a full shutdown, then
-               disconnect any dock, adapters and USB devices and try again on
-               charger power. If you still see no display or a diagnostic error
-               code, note the code and raise a ticket under &ldquo;Hardware&rdquo;.
-               For a Critical deadline, call the hotline so we can arrange a loaner
-               device.</p>
+        <div class="rb-item">
+          <button class="rb-q" aria-expanded="false" aria-controls="rb-4" id="rbq-4">
+            <span class="id">RB-04</span>
+            <span>My laptop won&rsquo;t boot &mdash; what should I do?</span>
+            <svg class="chev" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m4 6 4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="rb-panel" id="rb-4" role="region" aria-labelledby="rbq-4" hidden>
+            <p>Hold the power button for 15 seconds to force a full shutdown, then disconnect any
+              dock, adapters and USB devices and try again on charger power. If you still get no
+              display or see a diagnostic error code, note the code and raise a ticket under
+              &ldquo;Hardware&rdquo;. For a Critical deadline, call the hotline so we can arrange a
+              loaner device.</p>
           </div>
         </div>
 
-        <div class="faq-item">
-          <h3 style="margin:0;">
-            <button class="faq-q" aria-expanded="false" aria-controls="faq-panel-5" id="faq-q-5">
-              How do I request new software to be installed?
-            </button>
-          </h3>
-          <div class="faq-panel" id="faq-panel-5" role="region" aria-labelledby="faq-q-5" hidden>
-            <p>Submit a ticket under &ldquo;Software / Application&rdquo; with the
-               product name, version and a short business justification. Your line
-               manager will be asked to approve, and the Service Desk will confirm
-               licensing and security clearance before packaging it for deployment.
-               Approved standard applications are usually pushed to your device
-               within two business days.</p>
+        <div class="rb-item">
+          <button class="rb-q" aria-expanded="false" aria-controls="rb-5" id="rbq-5">
+            <span class="id">RB-05</span>
+            <span>How do I request new software to be installed?</span>
+            <svg class="chev" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m4 6 4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="rb-panel" id="rb-5" role="region" aria-labelledby="rbq-5" hidden>
+            <p>Raise a ticket under &ldquo;Software / Application&rdquo; with the product name,
+              version and a short business justification. Your line manager is asked to approve, and
+              the desk confirms licensing and security clearance before packaging it for deployment.
+              Approved standard applications usually reach your device within two business days.</p>
           </div>
         </div>
 
-        <div class="faq-item">
-          <h3 style="margin:0;">
-            <button class="faq-q" aria-expanded="false" aria-controls="faq-panel-6" id="faq-q-6">
-              I received a suspicious email &mdash; what now?
-            </button>
-          </h3>
-          <div class="faq-panel" id="faq-panel-6" role="region" aria-labelledby="faq-q-6" hidden>
-            <p>Do not click any links, open attachments or reply. Use the
-               &ldquo;Report Phishing&rdquo; button in your mail client, or forward
-               the message to the phishing mailbox, then delete it. If you have
-               already clicked or entered any details, raise a ticket under
-               &ldquo;Security Incident&rdquo; immediately and call the hotline.</p>
+        <div class="rb-item">
+          <button class="rb-q" aria-expanded="false" aria-controls="rb-6" id="rbq-6">
+            <span class="id">RB-06</span>
+            <span>I received a suspicious email &mdash; what now?</span>
+            <svg class="chev" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m4 6 4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="rb-panel" id="rb-6" role="region" aria-labelledby="rbq-6" hidden>
+            <p>Don&rsquo;t click any links, open attachments or reply. Use the &ldquo;Report
+              Phishing&rdquo; button in your mail client, or forward the message to the phishing
+              mailbox, then delete it. If you&rsquo;ve already clicked or entered any details, raise
+              a ticket under &ldquo;Security Incident&rdquo; straight away and call the hotline.</p>
           </div>
         </div>
 
-        <div class="faq-item">
-          <h3 style="margin:0;">
-            <button class="faq-q" aria-expanded="false" aria-controls="faq-panel-7" id="faq-q-7">
-              How do I get access to a shared drive or application?
-            </button>
-          </h3>
-          <div class="faq-panel" id="faq-panel-7" role="region" aria-labelledby="faq-q-7" hidden>
-            <p>Raise a ticket under &ldquo;Account &amp; Access&rdquo; and specify
-               the exact drive path or application name and the level of access you
-               need. The request is routed to the data or system owner for approval,
-               which keeps access aligned with least-privilege policy. Once approved,
-               access is normally granted within one business day and you will get a
-               confirmation email.</p>
+        <div class="rb-item">
+          <button class="rb-q" aria-expanded="false" aria-controls="rb-7" id="rbq-7">
+            <span class="id">RB-07</span>
+            <span>How do I get access to a shared drive or application?</span>
+            <svg class="chev" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m4 6 4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="rb-panel" id="rb-7" role="region" aria-labelledby="rbq-7" hidden>
+            <p>Raise a ticket under &ldquo;Account &amp; Access&rdquo; and give the exact drive path
+              or application name and the level of access you need. It&rsquo;s routed to the data or
+              system owner for approval, which keeps access aligned with least-privilege policy.
+              Once approved, access is normally granted within one business day and you get a
+              confirmation email.</p>
           </div>
         </div>
 
-        <div class="faq-item">
-          <h3 style="margin:0;">
-            <button class="faq-q" aria-expanded="false" aria-controls="faq-panel-8" id="faq-q-8">
-              How do I track or update an existing ticket?
-            </button>
-          </h3>
-          <div class="faq-panel" id="faq-panel-8" role="region" aria-labelledby="faq-q-8" hidden>
-            <p>Use the reference number from your confirmation (format
-               UOB-ITSD-YYYYMMDD-####) to look up the ticket in the Service Desk
-               portal, where you can see its status and history. You can add a
-               comment or attachment at any time, or simply reply to one of the
-               ticket&rsquo;s email notifications. To escalate, mark the update as
-               urgent or call the hotline with your reference number.</p>
+        <div class="rb-item">
+          <button class="rb-q" aria-expanded="false" aria-controls="rb-8" id="rbq-8">
+            <span class="id">RB-08</span>
+            <span>How do I track or update an existing ticket?</span>
+            <svg class="chev" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m4 6 4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="rb-panel" id="rb-8" role="region" aria-labelledby="rbq-8" hidden>
+            <p>Use the reference from your confirmation (format
+              <code>UOB-ITSD-YYYYMMDD-####</code>) to look the ticket up in the service desk portal,
+              where you can see its status and history. Add a comment or attachment any time, or
+              just reply to one of the ticket&rsquo;s email notifications. To escalate, mark the
+              update urgent or call the hotline with your reference number.</p>
           </div>
         </div>
       </div>
 
-      <p class="faq-empty" id="faqEmpty" hidden>No matching FAQs.</p>
+      <p class="rb-empty" id="faqEmpty" hidden>No runbook entries match that search.</p>
     </div>
   </section>
 
 </main>
 
 <!-- ============================================================
-     FOOTER — quick links, contact details, disclaimer
+     FOOTER — quick links, contact, security notice, disclaimer
      ============================================================ -->
 <footer class="site-footer" id="contact">
   <div class="container">
     <div class="footer-grid">
       <div>
-        <h3>Quick Links</h3>
+        <h3>Navigate</h3>
         <ul>
           <li><a href="#home">Home</a></li>
-          <li><a href="#ticket">Submit a Ticket</a></li>
-          <li><a href="#faq">FAQ</a></li>
+          <li><a href="#ticket">Log a ticket</a></li>
+          <li><a href="#faq">Self-service runbook</a></li>
         </ul>
       </div>
       <div>
         <h3>Contact</h3>
-        <ul>
-          <li>Hotline: 1800-XXX-XXXX</li>
-          <li>Email: <a href="mailto:itservicedesk@uobgroup.com">itservicedesk@uobgroup.com</a></li>
-          <li>Hours: Mon&ndash;Fri, 8am&ndash;8pm SGT</li>
+        <ul class="mono">
+          <li>Hotline &nbsp;1800-XXX-XXXX</li>
+          <li><a href="mailto:itservicedesk@uobgroup.com">itservicedesk@uobgroup.com</a></li>
+          <li>Mon&ndash;Fri &nbsp;08:00&ndash;20:00 SGT</li>
         </ul>
       </div>
       <div>
-        <h3>Disclaimer</h3>
-        <p class="disclaimer">This site is a training and demonstration mockup for
-           an internal IT Service Desk exercise. All names, numbers, email addresses
-           and processes shown are fictitious and for learning purposes only.</p>
+        <h3>Security</h3>
+        <p class="sec-line">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1.5 2.5 3.6v4c0 3.4 2.3 5.9 5.5 6.9 3.2-1 5.5-3.5 5.5-6.9v-4L8 1.5Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="m5.6 8 1.7 1.7L10.6 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          The service desk will never ask for your password, one-time passcode, PIN or card details
+          &mdash; by phone, email or in a ticket. If someone does, report it as a security incident.
+        </p>
       </div>
     </div>
 
     <div class="footer-bottom">
-      <span>Training demo &mdash; not affiliated with or endorsed by United Overseas Bank Limited.</span>
+      <span class="disc">Training demo &mdash; not affiliated with or endorsed by United Overseas Bank Limited.</span>
       <span>&copy; 2026 UOB &middot; IT Service Desk (training demo).</span>
     </div>
   </div>
 </footer>
 
 <!-- ============================================================
-     SCRIPT — all JS lives here; no network, no storage APIs
+     SCRIPT — one IIFE; no network, no storage APIs
      ============================================================ -->
 <script>
 (function () {
   "use strict";
 
-  /* ---------- SECTION 1: mobile nav toggle ---------- */
+  /* ---------- Header: mobile nav toggle ---------- */
   var navToggle = document.getElementById("navToggle");
   var navList = document.getElementById("navList");
-
   navToggle.addEventListener("click", function () {
     var open = navList.classList.toggle("open");
     navToggle.setAttribute("aria-expanded", String(open));
   });
-  // Close the menu after choosing a link on mobile.
   navList.addEventListener("click", function (e) {
     if (e.target.tagName === "A") {
       navList.classList.remove("open");
@@ -934,141 +1005,144 @@
     }
   });
 
+  /* ---------- Status strip: subtle count-up to the "avg response" figure ---------- */
+  (function countUp() {
+    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var targets = [document.getElementById("stripAvg"), document.getElementById("docketAvg")];
+    var finalMin = 3, finalSec = 12; // 03:12
+    function fmt(m, s) { return (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s; }
+    if (reduce) { return; }
+    var total = finalMin * 60 + finalSec, steps = 28, i = 0;
+    var timer = setInterval(function () {
+      i++;
+      var v = Math.round(total * (i / steps));
+      var txt = fmt(Math.floor(v / 60), v % 60);
+      for (var t = 0; t < targets.length; t++) { if (targets[t]) targets[t].textContent = txt; }
+      if (i >= steps) { clearInterval(timer); }
+    }, 22);
+  })();
+
   /* ============================================================
-     SECTION 2: ticket form
+     Ticket form
      ============================================================ */
   var form = document.getElementById("ticketForm");
   var successPanel = document.getElementById("successPanel");
+  var submitBtn = document.getElementById("submitBtn");
 
-  // In-memory store only — no localStorage, no sessionStorage, no network.
+  // In-memory only — no localStorage, no sessionStorage, no network.
   var submittedTickets = [];
 
   var SLA = {
-    Critical: "1 hour",
-    High: "4 hours",
-    Medium: "1 business day",
-    Low: "3 business days"
+    Critical: "Within 1 hour",
+    High: "Within 4 hours",
+    Medium: "Within 1 business day",
+    Low: "Within 3 business days"
   };
+  var PTAG = { Critical: "P1", High: "P2", Medium: "P3", Low: "P4" };
 
-  // Live character counters
+  /* live character counters */
   var subject = document.getElementById("subject");
   var subjectCount = document.getElementById("subjectCount");
   var description = document.getElementById("description");
   var descCount = document.getElementById("descCount");
-
-  subject.addEventListener("input", function () {
-    subjectCount.textContent = String(subject.value.length);
-  });
+  subject.addEventListener("input", function () { subjectCount.textContent = String(subject.value.length); });
   description.addEventListener("input", function () {
     descCount.textContent = String(description.value.length);
     checkCredentials();
   });
 
-  // Attachment: show the chosen filename only (no upload)
+  /* attachment: show chosen filename only (no upload) */
   var attachment = document.getElementById("attachment");
   var fileNameOut = document.getElementById("fileName");
   attachment.addEventListener("change", function () {
-    fileNameOut.textContent = attachment.files && attachment.files.length
-      ? "Selected file: " + attachment.files[0].name
-      : "";
+    fileNameOut.textContent = (attachment.files && attachment.files.length)
+      ? attachment.files[0].name : "No file chosen";
   });
 
-  // Credential-safety heuristic on the description (non-blocking warning)
+  /* credential-safety heuristic on the description (non-blocking) */
   var credWarning = document.getElementById("credWarning");
   var CRED_RE = /\b(pass\s?words?|passwd|pwd|otp|one[-\s]?time\s?(pass(word|code))?|pin|cvv|card\s?number|secret\s?(question|answer)|token)\b/i;
   function checkCredentials() {
     credWarning.classList.toggle("show", CRED_RE.test(description.value));
   }
 
-  /* ---- Validators: each returns "" (valid) or an error message ---- */
+  /* ---- validators: each returns "" (valid) or an error message ---- */
   var validators = {
     fullName: function () {
-      return document.getElementById("fullName").value.trim()
-        ? "" : "Please enter your full name.";
+      return document.getElementById("fullName").value.trim() ? "" : "Enter your full name.";
     },
     staffId: function () {
       var v = document.getElementById("staffId").value.trim();
-      if (!v) return "Please enter your Staff ID.";
+      if (!v) { return "Enter your Staff ID."; }
       return /^\d{6}$/.test(v) ? "" : "Staff ID must be exactly 6 digits.";
     },
     email: function () {
       var v = document.getElementById("email").value.trim();
-      if (!v) return "Please enter your corporate email.";
-      return /^[^@\s]+@uobgroup\.com$/i.test(v)
-        ? "" : "Email must be a valid address ending in @uobgroup.com.";
+      if (!v) { return "Enter your corporate email."; }
+      return /^[^@\s]+@uobgroup\.com$/i.test(v) ? "" : "Use a valid address ending in @uobgroup.com.";
     },
     department: function () {
-      return document.getElementById("department").value
-        ? "" : "Please select your department.";
+      return document.getElementById("department").value ? "" : "Select your department.";
     },
     category: function () {
-      return document.getElementById("category").value
-        ? "" : "Please select an issue category.";
+      return document.getElementById("category").value ? "" : "Select an issue category.";
     },
     priority: function () {
-      return form.querySelector('input[name="priority"]:checked')
-        ? "" : "Please select a priority.";
+      return form.querySelector('input[name="priority"]:checked') ? "" : "Choose a priority.";
     },
     subject: function () {
       var v = document.getElementById("subject").value.trim();
-      if (!v) return "Please enter a subject.";
+      if (!v) { return "Enter a subject."; }
       return v.length <= 100 ? "" : "Subject must be 100 characters or fewer.";
     },
     description: function () {
       var v = document.getElementById("description").value.trim();
-      if (!v) return "Please enter a description.";
-      return v.length >= 20
-        ? "" : "Description must be at least 20 characters (currently " + v.length + ").";
+      if (!v) { return "Describe the problem."; }
+      return v.length >= 20 ? "" : "Add a little more detail (at least 20 characters).";
     },
     confirm: function () {
-      return document.getElementById("confirm").checked
-        ? "" : "Please confirm the information provided is accurate.";
+      return document.getElementById("confirm").checked ? "" : "Tick the box to confirm before submitting.";
     }
   };
 
+  /* fixes validation order + first-invalid focus + error-summary order */
   var FIELD_ORDER = ["fullName", "staffId", "email", "department", "category",
                      "priority", "subject", "description", "confirm"];
+  var LABELS = {
+    fullName: "Full name", staffId: "Staff ID", email: "Corporate email",
+    department: "Department", category: "Issue category", priority: "Priority",
+    subject: "Subject", description: "Description", confirm: "Confirmation"
+  };
 
   function controlFor(name) {
-    if (name === "priority") {
-      return form.querySelector('input[name="priority"]');
-    }
+    if (name === "priority") { return form.querySelector('input[name="priority"]'); }
     return document.getElementById(name);
   }
 
   function setError(name, message) {
     var errEl = document.getElementById("err-" + name);
-    var control = controlFor(name);
+    var radios = name === "priority" ? form.querySelectorAll('input[name="priority"]') : null;
     if (message) {
-      errEl.textContent = message;
+      errEl.innerHTML = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4"/><path d="M8 4.8v3.6M8 10.6h.01" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg><span>' + message + '</span>';
       errEl.classList.add("show");
-      if (name === "priority") {
-        form.querySelectorAll('input[name="priority"]').forEach(function (r) {
-          r.setAttribute("aria-invalid", "true");
-        });
-      } else {
-        control.setAttribute("aria-invalid", "true");
-      }
+      if (radios) { for (var i = 0; i < radios.length; i++) { radios[i].setAttribute("aria-invalid", "true"); } }
+      else { controlFor(name).setAttribute("aria-invalid", "true"); }
     } else {
       errEl.textContent = "";
       errEl.classList.remove("show");
-      if (name === "priority") {
-        form.querySelectorAll('input[name="priority"]').forEach(function (r) {
-          r.removeAttribute("aria-invalid");
-        });
-      } else {
-        control.removeAttribute("aria-invalid");
-      }
+      if (radios) { for (var j = 0; j < radios.length; j++) { radios[j].removeAttribute("aria-invalid"); } }
+      else { controlFor(name).removeAttribute("aria-invalid"); }
     }
   }
 
   function validateField(name) {
     var msg = validators[name] ? validators[name]() : "";
     setError(name, msg);
+    updateRail();
     return !msg;
   }
 
-  // Validate on blur / change
+  /* validate on blur / change */
   FIELD_ORDER.forEach(function (name) {
     if (name === "priority") {
       form.querySelectorAll('input[name="priority"]').forEach(function (r) {
@@ -1077,88 +1151,129 @@
       return;
     }
     var control = document.getElementById(name);
-    var evt = (control.tagName === "SELECT" || control.type === "checkbox")
-      ? "change" : "blur";
+    var evt = (control.tagName === "SELECT" || control.type === "checkbox") ? "change" : "blur";
     control.addEventListener(evt, function () { validateField(name); });
   });
 
-  /* ---- Submit ---- */
+  /* ---- rail progress (who / what / confirm) ---- */
+  var railItems = document.querySelectorAll("#railSteps li");
+  var STEP_FIELDS = {
+    who: ["fullName", "staffId", "email", "department"],
+    what: ["category", "priority", "subject", "description"],
+    confirm: ["confirm"]
+  };
+  function stepComplete(step) {
+    return STEP_FIELDS[step].every(function (f) { return validators[f]() === ""; });
+  }
+  function updateRail() {
+    var order = ["who", "what", "confirm"], firstIncomplete = null;
+    order.forEach(function (s) { if (firstIncomplete === null && !stepComplete(s)) { firstIncomplete = s; } });
+    railItems.forEach(function (li) {
+      var s = li.getAttribute("data-step");
+      li.classList.toggle("done", stepComplete(s));
+      li.classList.toggle("current", s === firstIncomplete);
+    });
+  }
+  form.addEventListener("input", updateRail);
+  updateRail();
+
+  /* ---- error summary ---- */
+  var errorSummary = document.getElementById("errorSummary");
+  var errorSummaryList = document.getElementById("errorSummaryList");
+  function showErrorSummary(names) {
+    errorSummaryList.innerHTML = "";
+    names.forEach(function (name) {
+      var li = document.createElement("li");
+      var a = document.createElement("a");
+      a.href = "#";
+      a.textContent = LABELS[name] + " — " + validators[name]();
+      a.addEventListener("click", function (e) {
+        e.preventDefault();
+        var el = controlFor(name);
+        if (el && el.focus) { el.focus(); }
+      });
+      li.appendChild(a);
+      errorSummaryList.appendChild(li);
+    });
+    errorSummary.hidden = false;
+    errorSummary.focus();
+  }
+
+  /* ---- submit ---- */
   form.addEventListener("submit", function (e) {
     e.preventDefault();
 
-    var firstInvalid = null;
-    FIELD_ORDER.forEach(function (name) {
-      var ok = validateField(name);
-      if (!ok && !firstInvalid) firstInvalid = name;
-    });
+    var invalid = [];
+    FIELD_ORDER.forEach(function (name) { if (!validateField(name)) { invalid.push(name); } });
 
-    if (firstInvalid) {
-      var el = controlFor(firstInvalid);
-      if (el && typeof el.focus === "function") el.focus();
+    if (invalid.length) {
+      showErrorSummary(invalid);
       return;
     }
+    errorSummary.hidden = true;
 
-    // Build a mock ticket reference: UOB-ITSD-YYYYMMDD-####
-    var now = new Date();
-    var ymd = now.getFullYear().toString() +
-              String(now.getMonth() + 1).padStart(2, "0") +
-              String(now.getDate()).padStart(2, "0");
-    var rand = String(Math.floor(1000 + Math.random() * 9000));
-    var ref = "UOB-ITSD-" + ymd + "-" + rand;
+    // brief pending state, then confirm (no network — perceived feedback only)
+    submitBtn.disabled = true;
+    var prevLabel = submitBtn.textContent;
+    submitBtn.textContent = "Logging incident…";
 
-    var priority = form.querySelector('input[name="priority"]:checked').value;
+    window.setTimeout(function () {
+      var now = new Date();
+      var ymd = now.getFullYear().toString() +
+                String(now.getMonth() + 1).padStart(2, "0") +
+                String(now.getDate()).padStart(2, "0");
+      var rand = String(Math.floor(1000 + Math.random() * 9000));
+      var ref = "UOB-ITSD-" + ymd + "-" + rand;
+      var priority = form.querySelector('input[name="priority"]:checked').value;
 
-    var ticket = {
-      ref: ref,
-      name: document.getElementById("fullName").value.trim(),
-      staffId: document.getElementById("staffId").value.trim(),
-      email: document.getElementById("email").value.trim(),
-      department: document.getElementById("department").value,
-      category: document.getElementById("category").value,
-      priority: priority,
-      subject: document.getElementById("subject").value.trim(),
-      description: document.getElementById("description").value.trim(),
-      fileName: (attachment.files && attachment.files.length)
-        ? attachment.files[0].name : null,
-      submittedAt: now.toISOString()
-    };
-    submittedTickets.push(ticket);
+      submittedTickets.push({
+        ref: ref,
+        name: document.getElementById("fullName").value.trim(),
+        staffId: document.getElementById("staffId").value.trim(),
+        email: document.getElementById("email").value.trim(),
+        department: document.getElementById("department").value,
+        category: document.getElementById("category").value,
+        priority: priority,
+        subject: document.getElementById("subject").value.trim(),
+        description: document.getElementById("description").value.trim(),
+        fileName: (attachment.files && attachment.files.length) ? attachment.files[0].name : null,
+        submittedAt: now.toISOString()
+      });
 
-    // Populate and reveal the success panel
-    document.getElementById("outRef").textContent = ref;
-    document.getElementById("outPriority").textContent = priority;
-    document.getElementById("outSla").textContent = SLA[priority];
+      document.getElementById("outRef").textContent = ref;
+      document.getElementById("outPriority").textContent = priority + "  ·  " + PTAG[priority];
+      document.getElementById("outSla").textContent = SLA[priority];
 
-    form.hidden = true;
-    successPanel.hidden = false;
-    successPanel.setAttribute("tabindex", "-1");
-    successPanel.focus();
+      submitBtn.disabled = false;
+      submitBtn.textContent = prevLabel;
+      form.hidden = true;
+      successPanel.hidden = false;
+      successPanel.focus();
+    }, 500);
   });
 
-  /* ---- "Submit another ticket" — reset everything ---- */
+  /* ---- "Log another ticket" — reset everything ---- */
   document.getElementById("anotherBtn").addEventListener("click", function () {
     form.reset();
-
     FIELD_ORDER.forEach(function (name) { setError(name, ""); });
     subjectCount.textContent = "0";
     descCount.textContent = "0";
-    fileNameOut.textContent = "";
+    fileNameOut.textContent = "No file chosen";
     credWarning.classList.remove("show");
-
+    errorSummary.hidden = true;
+    updateRail();
     successPanel.hidden = true;
     form.hidden = false;
     document.getElementById("fullName").focus();
   });
 
   /* ============================================================
-     SECTION 3: FAQ accordion + live search
+     Runbook accordion + live search
      ============================================================ */
-  var faqButtons = Array.prototype.slice.call(document.querySelectorAll(".faq-q"));
-
+  var faqButtons = Array.prototype.slice.call(document.querySelectorAll(".rb-q"));
   faqButtons.forEach(function (btn) {
     btn.addEventListener("click", function () {
       var expanded = btn.getAttribute("aria-expanded") === "true";
-      // Close all others (one open at a time)
       faqButtons.forEach(function (other) {
         other.setAttribute("aria-expanded", "false");
         document.getElementById(other.getAttribute("aria-controls")).hidden = true;
@@ -1171,20 +1286,16 @@
   });
 
   var faqSearch = document.getElementById("faqSearch");
-  var faqItems = Array.prototype.slice.call(document.querySelectorAll(".faq-item"));
+  var faqItems = Array.prototype.slice.call(document.querySelectorAll(".rb-item"));
   var faqEmpty = document.getElementById("faqEmpty");
-
   faqSearch.addEventListener("input", function () {
     var q = faqSearch.value.trim().toLowerCase();
     var visible = 0;
-
     faqItems.forEach(function (item) {
-      var text = item.textContent.toLowerCase();
-      var match = q === "" || text.indexOf(q) !== -1;
+      var match = q === "" || item.textContent.toLowerCase().indexOf(q) !== -1;
       item.hidden = !match;
-      if (match) visible++;
+      if (match) { visible++; }
     });
-
     faqEmpty.hidden = visible !== 0;
   });
 

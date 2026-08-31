@@ -9,6 +9,13 @@
 # Playwright MCP working directory
 .playwright-mcp/
 
+# Local skill tooling (installed via `npx skills`) — not part of the deliverable.
+# Kept local: the .claude/skills entries are symlinks that don't survive a
+# git-for-Windows clone.
+.agents/
+.claude/skills/
+skills-lock.json
+
 # OS cruft
 .DS_Store
 Thumbs.db
